@@ -18,7 +18,6 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
-        .package(url: "https://github.com/madebybowtie/FlagKit", from: "2.0.0"),
         .package(url: "https://github.com/drmohundro/SWXMLHash", from: "7.0.0")
     ],
     targets: [
@@ -27,8 +26,7 @@ let package = Package(
         .target(
             name: "HamRadioKit",
             dependencies: [
-                "SWXMLHash",
-                "FlagKit"
+                "SWXMLHash"
             ]),
         .testTarget(
             name: "HamRadioKitTests",

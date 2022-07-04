@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FlagKit
 
 public enum DXCCMode: String, Codable {
     case cw = "CW"
@@ -851,15 +850,6 @@ public extension DXCC {
         case 488: return true
         case 493: return true
         default: return false
-        }
-    }
-    
-    var flag: Flag? {
-        if let iso = self.iso {
-            return Flag(countryCode: iso)
-        }
-        else {
-            return nil
         }
     }
 }
