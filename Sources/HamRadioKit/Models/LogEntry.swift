@@ -42,7 +42,7 @@ public struct LogEntry: Codable, Identifiable {
     }
     public var submode: String?
     public var dxcc: UInt64?
-    private(set) var dxccMode: DXCCMode?
+    private(set) public var dxccMode: DXCCMode?
     public var cqz: UInt64?
     public var ituz: UInt64?
     public var cont: String?
@@ -79,12 +79,61 @@ public struct LogEntry: Codable, Identifiable {
     public var contestId: String?
     public var serialSent: String?
     public var serialRcvd: String?
-    
-    public enum CodingKeys: CodingKey {
-        case id, logbookId, callsign, startTime, gridsquare, dxcc, dxccMode, band, mode
+
+    public enum CodingKeys: String, CodingKey {
+        case id
+        case logbookId
+        case callsign
+        case rstSent
+        case rstRcvd
+        case startTime
+        case endTime
+        case name
+        case qth
+        case gridsquare
+        case freq
+        case band
+        case mode
+        case submode
+        case dxcc
+        case dxccMode
+        case cqz
+        case ituz
+        case cont
+        case country
+        case pfx
+        case state
+        case cnty
+        case lat
+        case lon
+        case iota
+        case sota
+        case qslRcvd
+        case qslRdate
+        case qslSent
+        case qslSdate
+        case qslVia
+        case lotwQslRcvd
+        case lotwQslRdate
+        case lotwQslSent
+        case lotwQslSdate
+        case txPwr
+        case comment
+        case notes
+        case myAntenna
+        case myRig
+        case myGridsquare
+        case myDxcc
+        case myLat
+        case myLon
+        case myIota
+        case mySota
+        case stationCallsign
+        case stationOperator
+        case contestId
+        case serialSent
+        case serialRcvd
     }
-    
-    public init() {
-        
-    }
+
+    public init() {}
 }

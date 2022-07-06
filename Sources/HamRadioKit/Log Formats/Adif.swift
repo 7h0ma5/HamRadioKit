@@ -8,68 +8,67 @@
 import Foundation
 import UniformTypeIdentifiers
 
-fileprivate let AdifDateFormatter: DateFormatter = {
+private let adifDateFormatter: DateFormatter = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyyMMdd"
     dateFormatter.timeZone = TimeZone.init(abbreviation: "UTC")!
     return dateFormatter
 }()
 
-fileprivate let AdifDateFormatterMinutes: DateFormatter = {
+private let adifDateFormatterMinutes: DateFormatter = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyyMMdd HHmm"
     dateFormatter.timeZone = TimeZone.init(abbreviation: "UTC")!
     return dateFormatter
 }()
 
-fileprivate let AdifDateFormatterSeconds: DateFormatter = {
+private let adifDateFormatterSeconds: DateFormatter = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "yyyyMMdd HHmmss"
     dateFormatter.timeZone = TimeZone.init(abbreviation: "UTC")!
     return dateFormatter
 }()
 
-fileprivate let AdifTimeFormatter: DateFormatter = {
+private let adifTimeFormatter: DateFormatter = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "HHmmss"
     dateFormatter.timeZone = TimeZone.init(abbreviation: "UTC")!
     return dateFormatter
 }()
 
-
-fileprivate struct AdifContact {
+private struct AdifContact {
     let fields: [AdifField]
 }
 
-fileprivate struct AdifHeader {
+private struct AdifHeader {
     let fields: [AdifField]
 }
 
-fileprivate struct AdifField {
+private struct AdifField {
     let name: Substring
     let value: Substring?
 }
 
 public class AdifReader {
-    fileprivate var data: Substring
-    fileprivate var header: Optional<AdifHeader> = nil
+    private var data: Substring
+    private var header: AdifHeader?
     
-    fileprivate var initialCount: Int
+    private var initialCount: Int
     
     static func parseDatetime(date: String, time: String?) -> Date? {
         if let time = time {
             if time.count == 4 {
-                return AdifDateFormatterMinutes.date(from: date + " " + time)
+                return adifDateFormatterMinutes.date(from: date + " " + time)
             }
             else if time.count == 6 {
-                return AdifDateFormatterSeconds.date(from: date + " " + time)
+                return adifDateFormatterSeconds.date(from: date + " " + time)
             }
             else {
-                return AdifDateFormatter.date(from: date)
+                return adifDateFormatter.date(from: date)
             }
         }
         else {
-            return AdifDateFormatter.date(from: date)
+            return adifDateFormatter.date(from: date)
         }
     }
     
@@ -84,88 +83,90 @@ public class AdifReader {
     
     private func readField() -> AdifField? {
         data = data.drop(while: { $0 != "<" }).dropFirst()
-        
+
         if data.isEmpty { return nil }
-        
+
         let name = data.prefix(while: { $0 != ":" && $0 != ">" })
         data = data.dropFirst(name.count)
-        
+
         if data.isEmpty { return nil }
-        
+
         if data.popFirst() == ">" {
-            return AdifField(name: name, value: nil);
+            return AdifField(name: name, value: nil)
         }
-        
+
         let size = data.prefix(while: { $0 != ":" && $0 != ">" })
         data = data.dropFirst(size.count)
-        
+
         if data.isEmpty { return nil }
-        
+
         if data.popFirst() == ":" {
             let dataType = data.prefix(while: { $0 != ">" })
             data = data.dropFirst(dataType.count + 1)
         }
-        
+
         if data.isEmpty { return nil }
-        
+
         let length = Int(size) ?? 0;
         if length == 0 || data.isEmpty { return nil }
 
-        let value = data.prefix(length);
+        let value = data.prefix(length)
         data = data.dropFirst(length);
-        
-        return AdifField(name: name, value: value);
+
+        return AdifField(name: name, value: value)
     }
-    
+
     private func readHeader() {
         if data.starts(with: "<") {
             self.header = Optional.some(AdifHeader(fields: []));
             return;
         }
-        
+
         var fields: [AdifField] = [];
-        
+
         while let field = readField() {
-            if (field.name.lowercased() == "eoh") {
-                header = AdifHeader(fields: fields);
+            if field.name.lowercased() == "eoh" {
+                header = AdifHeader(fields: fields)
                 return;
             }
-            fields.append(field);
+            fields.append(field)
         }
     }
-    
+
     private func readContact() -> AdifContact? {
         if self.header == nil {
-            readHeader();
+            readHeader()
         }
-        
-        var fields: [AdifField] = [];
-        
+
+        var fields: [AdifField] = []
+
         while let field = readField() {
-            if (field.name.lowercased() == "eor") {
-                return AdifContact(fields: fields);
+            if field.name.lowercased() == "eor" {
+                return AdifContact(fields: fields)
             }
-            fields.append(field);
+            fields.append(field)
         }
-        
+
         return nil;
     }
-    
+
+    // TODO: Refactor this function
+    // swiftlint:disable:next cyclomatic_complexity
     public func readEntry() -> LogEntry? {
         guard let contact = readContact() else { return nil }
-        
+
         var entry = LogEntry()
-        
-        var startDate: String? = nil
-        var startTime: String? = nil
-        var endDate: String? = nil
-        var endTime: String? = nil
-       
+
+        var startDate: String?
+        var startTime: String?
+        var endDate: String?
+        var endTime: String?
+
         for field in contact.fields {
             guard field.value != nil else { continue }
-            
+
             let value = field.value!
-            
+
             switch field.name.lowercased() {
             case "qso_date": startDate = String(value)
             case "qso_date_off": endDate = String(value)
@@ -194,14 +195,14 @@ public class AdifReader {
             case "iota": entry.iota = value.uppercased()
             case "sota_ref": entry.sota = value.uppercased()
             case "qsl_rcvd": entry.qslRcvd = .init(rawValue: value.uppercased()) ?? .no
-            case "qslrdate": entry.qslRdate = AdifDateFormatter.date(from: String(value))
+            case "qslrdate": entry.qslRdate = adifDateFormatter.date(from: String(value))
             case "qsl_sent": entry.qslSent = .init(rawValue: value.uppercased()) ?? .no
-            case "qslsdate": entry.qslSdate = AdifDateFormatter.date(from: String(value))
+            case "qslsdate": entry.qslSdate = adifDateFormatter.date(from: String(value))
             case "qsl_via": entry.qslVia = String(value)
             case "lotw_qsl_rcvd": entry.lotwQslRcvd = .init(rawValue: value.uppercased()) ?? .no
-            case "lotw_qslrdate": entry.lotwQslRdate = AdifDateFormatter.date(from: String(value))
+            case "lotw_qslrdate": entry.lotwQslRdate = adifDateFormatter.date(from: String(value))
             case "lotw_qsl_sent": entry.lotwQslSent = .init(rawValue: value.uppercased()) ?? .no
-            case "lotw_qslsdate": entry.lotwQslSdate = AdifDateFormatter.date(from: String(value))
+            case "lotw_qslsdate": entry.lotwQslSdate = adifDateFormatter.date(from: String(value))
             case "tx_pwr": entry.txPwr = Double(value)
             case "comment": entry.comment = String(value)
             case "notes": entry.notes = String(value)
@@ -222,10 +223,9 @@ public class AdifReader {
             case "srx_string": entry.serialRcvd = String(value)
             default:
                 debugPrint("unknown field:", field.name)
-                break;
             }
         }
-        
+
         if let startDate = startDate {
             if let start = Self.parseDatetime(date: startDate, time: startTime) {
                 entry.startTime = start
@@ -234,53 +234,53 @@ public class AdifReader {
                 entry.endTime = end
             }
         }
-        
+
         return entry
     }
 }
 
 public class AdifWriter {
     private(set) public var data: String = ""
-    
+
     public init(withHeader: Bool) {
         if withHeader {
             writeHeader()
         }
     }
-    
+
     func writeHeader() {
         data = "### QLog ADIF Export\n"
         write(field: "ADIF_VER", "3.1.3")
         write(field: "PROGRAMID", "QLog")
-        
+
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             write(field: "PROGRAMVERSION", version)
         }
-    
-        write(field: "CREATED_TIMESTAMP", AdifDateFormatterSeconds.string(from: Date()))
+
+        write(field: "CREATED_TIMESTAMP", adifDateFormatterSeconds.string(from: Date()))
         write(field: "EOH")
     }
-    
+
     func write(field: String) {
         data += "<\(field)>\n\n"
     }
-    
+
     func write(field: String, _ value: String) {
         data += "<\(field):\(value.count)>\(value)\n"
     }
-    
+
     func write(field: String, _ value: String?) {
         if let value = value {
             write(field: field, value)
         }
     }
-    
+
     func write(field: String, _ value: UInt64?) {
         if let value = value {
             write(field: field, String(value))
         }
     }
-    
+
     public func write(entry: LogEntry) {
         write(field: "call", entry.callsign)
         write(field: "qth", entry.qth)
@@ -290,16 +290,16 @@ public class AdifWriter {
         write(field: "mode", entry.mode?.rawValue)
         write(field: "gridsquare", entry.gridsquare)
         write(field: "dxcc", entry.dxcc)
-        
-        write(field: "qso_date", AdifDateFormatter.string(from: entry.startTime))
-        write(field: "time", AdifTimeFormatter.string(from: entry.startTime))
-        
-        write(field: "qso_date_off", AdifDateFormatter.string(from: entry.endTime ?? entry.startTime))
-        write(field: "time_off", AdifTimeFormatter.string(from: entry.endTime ?? entry.startTime))
-        
+
+        write(field: "qso_date", adifDateFormatter.string(from: entry.startTime))
+        write(field: "time", adifTimeFormatter.string(from: entry.startTime))
+
+        write(field: "qso_date_off", adifDateFormatter.string(from: entry.endTime ?? entry.startTime))
+        write(field: "time_off", adifTimeFormatter.string(from: entry.endTime ?? entry.startTime))
+
         write(field: "eor")
     }
-    
+
     public func write(entries: [LogEntry]) {
         entries.forEach(self.write(entry:))
     }

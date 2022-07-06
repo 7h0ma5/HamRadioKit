@@ -39,7 +39,7 @@ public enum Mode: String, CaseIterable, Codable, CustomStringConvertible {
     case pax = "PAX"
     case thrb = "THRB"
     
-    static let legacyModes: [String:(Mode, String)] = [
+    static let legacyModes: [String: (Mode, String)] = [
         "AMTORFEC": (Mode.tor, "AMTORFEC"),
         "ASCI": (Mode.rtty, "ASCI"),
         "CHIP64": (Mode.chip, "CHIP64"),
@@ -107,7 +107,7 @@ public enum Mode: String, CaseIterable, Codable, CustomStringConvertible {
         default: return nil
         }
     }
-    
+
     public var submodes: [String] {
         switch self {
         case .ssb: return ["LSB", "USB"]

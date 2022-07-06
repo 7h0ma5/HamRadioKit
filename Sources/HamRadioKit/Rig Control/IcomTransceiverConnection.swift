@@ -50,7 +50,6 @@ class IcomTransceiverConnection: TransceiverControl {
         switch data[4] {
         case 0x00:
             let freq = Self.parseFrequency(from: [UInt8](data[5...9]))
-            debugPrint("received frequency data (transceive)", freq);
             
         case 0x01:
             debugPrint("received mode data (transceive)")

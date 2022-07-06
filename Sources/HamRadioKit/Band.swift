@@ -8,6 +8,7 @@
 import Foundation
 
 public enum Band: String, CaseIterable, Codable, CustomStringConvertible {
+    // swiftlint:disable identifier_name
     case _2190m = "2190m"
     case _630m = "630m"
     case _560m = "560m"
@@ -38,7 +39,8 @@ public enum Band: String, CaseIterable, Codable, CustomStringConvertible {
     case _2mm5 = "2.5mm"
     case _2mm = "2mm"
     case _1mm = "1mm"
-    
+    // swiftlint:enable identifier_name
+
     public var description: String {
         return self.name
     }

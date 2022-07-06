@@ -1,5 +1,5 @@
 //
-//  Tests_Locator.swift
+//  LocatorTests.swift
 //  HamRadioKit
 //
 //  Created by Thomas Gatzweiler on 04.07.22.
@@ -8,7 +8,7 @@
 import XCTest
 @testable import HamRadioKit
 
-class Tests_Locator: XCTestCase {
+class LocatorTests: XCTestCase {
     func testCoordinateCalculation() throws {
         try [
             ("AA", -90.0, -180.0),
@@ -45,7 +45,6 @@ class Tests_Locator: XCTestCase {
     }
 
     func testPerformance() throws {
-        // This is an example of a performance test case.
         self.measure {
             let locator = Locator("JO30BS")
             XCTAssertTrue(locator.isValid)
