@@ -281,15 +281,15 @@ public class AdifWriter {
         }
     }
 
+    func write(field: String, _ value: Double?) {
+        if let value = value {
+            write(field: field, String(value))
+        }
+    }
+
     public func write(entry: LogEntry) {
-        write(field: "call", entry.callsign)
-        write(field: "qth", entry.qth)
-        write(field: "name", entry.name)
-        write(field: "freq", entry.freq)
-        write(field: "band", entry.band?.rawValue)
-        write(field: "mode", entry.mode?.rawValue)
-        write(field: "gridsquare", entry.gridsquare)
-        write(field: "dxcc", entry.dxcc)
+        write(field: "app_qlog_id", entry.id.uuidString)
+        write(field: "app_qlog_logbook", entry.logbookId.map { $0.uuidString })
 
         write(field: "qso_date", adifDateFormatter.string(from: entry.startTime))
         write(field: "time", adifTimeFormatter.string(from: entry.startTime))
@@ -297,6 +297,53 @@ public class AdifWriter {
         write(field: "qso_date_off", adifDateFormatter.string(from: entry.endTime ?? entry.startTime))
         write(field: "time_off", adifTimeFormatter.string(from: entry.endTime ?? entry.startTime))
 
+        write(field: "call", entry.callsign)
+        write(field: "qth", entry.qth)
+        write(field: "name", entry.name)
+        write(field: "freq", entry.freq)
+        write(field: "band", entry.band?.rawValue)
+        write(field: "mode", entry.mode?.rawValue)
+        write(field: "submode", entry.submode)
+        write(field: "gridsquare", entry.gridsquare)
+        write(field: "rst_sent", entry.rstSent)
+        write(field: "rst_rcvd", entry.rstRcvd)
+        write(field: "dxcc", entry.dxcc)
+        write(field: "cqz", entry.cqz)
+        write(field: "ituz", entry.ituz)
+        write(field: "cont", entry.cont)
+        write(field: "country", entry.country)
+        write(field: "pfx", entry.pfx)
+        write(field: "state", entry.state)
+        write(field: "cnty", entry.cnty)
+        write(field: "lat", entry.lat)
+        write(field: "lon", entry.lon)
+        write(field: "iota", entry.iota)
+        write(field: "sota", entry.sota)
+        write(field: "qsl_rcvd", entry.qslRcvd.rawValue)
+        write(field: "qsl_rdate", entry.qslRdate.map { adifDateFormatter.string(from: $0) })
+        write(field: "qsl_sent", entry.qslSent.rawValue)
+        write(field: "qsl_sdate", entry.qslSdate.map { adifDateFormatter.string(from: $0) })
+        write(field: "qsl_via", entry.qslVia)
+        write(field: "lotw_qsl_rcvd", entry.lotwQslRcvd.rawValue)
+        write(field: "lotw_qsl_rdate", entry.lotwQslRdate.map { adifDateFormatter.string(from: $0) })
+        write(field: "lotw_qsl_sent", entry.lotwQslSent.rawValue)
+        write(field: "lotw_qsl_sdate", entry.lotwQslSdate.map { adifDateFormatter.string(from: $0) })
+        write(field: "tx_pwr", entry.txPwr)
+        write(field: "comment", entry.comment)
+        write(field: "notes", entry.notes)
+        write(field: "my_antenna", entry.myAntenna)
+        write(field: "my_rig", entry.myRig)
+        write(field: "my_gridsquare", entry.myGridsquare)
+        write(field: "my_dxcc", entry.myDxcc)
+        write(field: "my_lat", entry.myLat)
+        write(field: "my_lon", entry.myLon)
+        write(field: "my_iota", entry.myIota)
+        write(field: "my_sota", entry.mySota)
+        write(field: "station_callsign", entry.stationCallsign)
+        write(field: "operator", entry.stationOperator)
+        write(field: "contest_id", entry.contestId)
+        write(field: "serial_sent", entry.serialSent)
+        write(field: "serial_rcvd", entry.serialRcvd)
         write(field: "eor")
     }
 

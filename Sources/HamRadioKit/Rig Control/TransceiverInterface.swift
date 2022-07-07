@@ -16,10 +16,11 @@ public enum TransceiverInterfaceStatus {
 
 public protocol TransceiverInterface {
     var status: TransceiverInterfaceStatus { get }
-    var onCommand: ((Data) -> ())? { get set }
+
+    var onCommand: ((Data) -> Bool)? { get set }
     
     func connect() async throws
-    func command(_ cmd: Data) async throws -> Data
+    func command(_ cmd: Data) async throws -> Data?
 }
 
 public protocol TransceiverInterfaceConfig: Hashable, Codable { }

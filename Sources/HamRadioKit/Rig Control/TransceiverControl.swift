@@ -20,7 +20,7 @@ public enum TransceiverSideband {
     case lsb
 }
 
-extension TransceiverMode:  CustomStringConvertible {
+extension TransceiverMode: CustomStringConvertible {
     public var description: String {
         switch self {
         case .ssb: return "SSB"
@@ -40,9 +40,8 @@ public struct TransceiverState {
 }
 
 // MARK: -
-protocol TransceiverControl {
-    var interface: any TransceiverInterface { get }
-    
+public protocol TransceiverControl {
+    func connect() async throws
     func change(frequency: Double) async throws
     func change(mode: TransceiverMode, sideband: TransceiverSideband) async throws
 }

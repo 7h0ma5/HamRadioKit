@@ -46,12 +46,22 @@ public struct Transceiver: Identifiable, Hashable, Codable {
     public var name: String
     public var model: Model
     public var interface: Interface
-    
+
     public init(id: UUID, name: String, model: Model, interface: Interface) {
         self.id = id
         self.name = name
         self.model = model
         self.interface = interface
+    }
+
+    public func connection() -> (any TransceiverControl)? {
+        switch self.model {
+        case .ic705:
+            let interface = BluetoothInterface(connectionId: self.id)
+            return IcomTransceiverConnection(interface: interface)
+        default:
+            return nil
+        }
     }
 }
 

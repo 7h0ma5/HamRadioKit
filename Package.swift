@@ -13,7 +13,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "HamRadioKit",
-            targets: ["HamRadioKit"]),
+            targets: ["HamRadioKit"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -30,6 +30,6 @@ let package = Package(
             ]),
         .testTarget(
             name: "HamRadioKitTests",
-            dependencies: ["HamRadioKit"]),
+            dependencies: ["HamRadioKit"])
     ]
 )
