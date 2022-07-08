@@ -62,7 +62,7 @@ public extension Locator {
 
         lon += CLLocationDegrees(bytes[6] - 48) * 0.5 / 60.0
         lat += CLLocationDegrees(bytes[7] - 48) * 0.25 / 60.0
-        
+
         guard bytes.count >= 10 else {
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
@@ -100,13 +100,13 @@ public extension Locator {
     }
 
     var region: MKCoordinateRegion? {
-        guard let coordinate = self.coordinate else { return nil }
+        guard let center = self.center else { return nil }
         
         return MKCoordinateRegion(
-            center: coordinate,
+            center: center,
             span: MKCoordinateSpan(
-                latitudeDelta: precision.latitude,
-                longitudeDelta: precision.longitude
+                latitudeDelta: precision.latitude*1.5,
+                longitudeDelta: precision.longitude*1.5
             )
         )
     }
