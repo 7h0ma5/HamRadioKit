@@ -8,7 +8,7 @@
 import Foundation
 
 public struct Transceiver: Identifiable, Hashable, Codable {
-    public enum Interface: String, CustomStringConvertible, Hashable, Codable, CaseIterable {
+    public enum Interface: String, Hashable, Codable, CaseIterable {
         public static let allCases: [Transceiver.Interface] = [
             .none, .bluetooth, .serial, .network
         ]
@@ -17,15 +17,6 @@ public struct Transceiver: Identifiable, Hashable, Codable {
         case bluetooth
         case serial
         case network
-        
-        public var description: String {
-            switch self {
-            case .none: return String(localized: "No Interface")
-            case .bluetooth: return String(localized: "Bluetooth")
-            case .serial: return String(localized: "Serial")
-            case .network: return String(localized: "Network")
-            }
-        }
     }
     
     public enum Model: String, CustomStringConvertible, Hashable, Codable, CaseIterable {
