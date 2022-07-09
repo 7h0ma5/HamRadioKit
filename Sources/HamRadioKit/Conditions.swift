@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(iOS 15, macOS 12.0, *)
 public struct Conditions {
     /// Solar flux index.
     public let flux: Int

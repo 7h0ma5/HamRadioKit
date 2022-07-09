@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(iOS 15, macOS 12.0, *)
 public struct Transceiver: Identifiable, Hashable, Codable {
     public enum Interface: String, Hashable, Codable, CaseIterable {
         public static let allCases: [Transceiver.Interface] = [
@@ -56,6 +57,7 @@ public struct Transceiver: Identifiable, Hashable, Codable {
     }
 }
 
+@available(iOS 15, macOS 12.0, *)
 extension Transceiver {
     public static var `default`: Transceiver {
         Transceiver(

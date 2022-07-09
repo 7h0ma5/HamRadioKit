@@ -12,6 +12,7 @@ import os
 import UIKit
 #endif
 
+@available(iOS 15, macOS 12.0, *)
 @objc
 class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
     let connectionId: UUID
@@ -74,6 +75,7 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
     }
 }
 
+@available(iOS 15, macOS 12.0, *)
 extension BluetoothInterface: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let services = peripheral.services else {
@@ -200,6 +202,7 @@ extension BluetoothInterface: CBPeripheralDelegate {
     }
 }
 
+@available(iOS 15, macOS 12.0, *)
 extension BluetoothInterface: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         var newStatus: TransceiverInterfaceStatus?

@@ -10,6 +10,7 @@ import Foundation
 public typealias Frequency = UInt64
 
 public extension Frequency {
+    @available(iOS 15, macOS 12.0, *)
     static let format = Measurement<UnitFrequency>.FormatStyle
         .measurement(
             width: .abbreviated,
@@ -19,7 +20,6 @@ public extension Frequency {
                     .precision(.fractionLength(3))
         )
  
-    
     init?<S>(fromMegaHertz data: S) where S: StringProtocol {
         if let doubleValue = Double(data) {
             self = UInt64((doubleValue * 1e6).rounded())
@@ -32,7 +32,8 @@ public extension Frequency {
     var band: Band? {
         Band.find(forFreq: self)
     }
-    
+
+    @available(iOS 15, macOS 12.0, *)
     var measurement: Measurement<UnitFrequency> {
         if self < 1_000_000 {
             return Measurement<UnitFrequency>(value: Double(self) / 1e3, unit: .kilohertz)

@@ -15,6 +15,7 @@ public struct HamQTHConfig {
     public init() {}
 }
 
+@available(iOS 15, macOS 12.0, *)
 public class HamQTH: Callbook {
     public static let shared = HamQTH()
     public var config: HamQTHConfig = HamQTHConfig()
