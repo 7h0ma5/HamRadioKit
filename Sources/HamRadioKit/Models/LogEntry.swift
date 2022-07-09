@@ -22,7 +22,7 @@ public enum QSLSentStatus: String, Codable, CaseIterable {
     case ignore = "I"
 }
 
-public struct LogEntry: Codable, Identifiable {
+public struct LogEntry: Codable, Identifiable, Hashable, Equatable {
     public var id: UUID = UUID()
     public var logbookId: UUID?
     public var callsign: String = ""
@@ -33,6 +33,7 @@ public struct LogEntry: Codable, Identifiable {
     public var name: String?
     public var qth: String?
     public var gridsquare: Locator?
+    /// TX Frequency of the QSO in Hz
     public var freq: Frequency?
     public var band: Band?
     public var mode: Mode? {
@@ -136,4 +137,78 @@ public struct LogEntry: Codable, Identifiable {
     }
 
     public init() {}
+}
+
+extension LogEntry {
+    private static func randomSuffix() -> String {
+        let length = Int.random(in: 2...3)
+        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        return String((0..<length).map{ _ in letters.randomElement()! })
+    }
+
+    static let names: [String] = [
+        "Maria", "Jose", "Mohammed", "Anna", "John", "Ali",
+        "Robert", "Jean",  "Elena", "Min", "Paul", "Sarah"
+    ]
+
+    // swiftlint:disable:next large_tuple
+    static let countries: [(prefix: String, qth: String, dxccId: DXCC, ituz: UInt64, cqz: UInt64)] = [
+        ("VU", "New Delhi", 324, 41, 22),
+        ("LA", "Oslo", 266, 18, 14),
+        ("M", "London", 223, 27, 14),
+        ("JA", "Tokyo", 339, 45, 25),
+        ("F", "Paris", 227, 27, 14),
+        ("DL", "Berlin", 230, 28, 14),
+        ("EA", "Madrid", 281, 37, 14),
+        ("K", "New York", 291, 6, 3),
+        ("ON", "Brussels", 209, 27, 14),
+        ("TF", "Reykjavik", 242, 17, 40),
+        ("I", "Rome", 248, 28, 15),
+        ("UR", "Kyiv", 288, 29, 16),
+        ("VK", "Sydney", 150, 60, 29),
+        ("ZL", "Wellington", 170, 60, 32),
+        ("ZS", "Cape Town", 462, 57, 38)
+    ]
+
+    static let bands: [Band] = [
+        ._160m,
+        ._80m,
+        ._40m,
+        ._20m,
+        ._15m,
+        ._10m,
+        ._2m
+    ]
+
+    static let modes: [Mode] = [
+        .cw,
+        .ssb,
+        .ft8,
+        .rtty
+    ]
+
+    public static func random() -> LogEntry? {
+        guard let country = countries.randomElement() else { return nil }
+
+        var entry = LogEntry()
+        entry.startTime = Date(timeIntervalSinceReferenceDate: Date().timeIntervalSinceReferenceDate.rounded())
+        entry.endTime = entry.startTime.addingTimeInterval(Double.random(in: 5...300).rounded())
+        entry.callsign = "\(country.prefix)\(Int.random(in: 0...9))\(randomSuffix())"
+        entry.name = names.randomElement()
+        entry.qth = country.qth
+        entry.mode = modes.randomElement()
+        entry.band = bands.randomElement()
+        entry.rstRcvd = entry.mode?.defaultReport
+        entry.rstSent = entry.mode?.defaultReport
+        entry.freq = entry.band?.freqRange.randomElement()!
+        entry.dxcc = country.dxccId
+        entry.ituz = country.ituz
+        entry.cqz = country.cqz
+        entry.country = country.dxccId.name
+        entry.pfx = country.prefix
+        entry.qslRcvd = QSLReceivedStatus.allCases.randomElement() ?? .no
+        entry.qslSent = QSLSentStatus.allCases.randomElement() ?? .no
+
+        return entry
+    }
 }

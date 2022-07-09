@@ -163,11 +163,11 @@ public class AdifReader {
         var endTime: String?
 
         for field in contact.fields {
-            guard field.value != nil else { continue }
-
-            let value = field.value!
+            guard let value = field.value else { continue }
 
             switch field.name.lowercased() {
+            case "app_qlog_id": entry.id = UUID(uuidString: String(value)) ?? entry.id
+            case "app_qlog_logbook": entry.logbookId = UUID(uuidString: String(value))
             case "qso_date": startDate = String(value)
             case "qso_date_off": endDate = String(value)
             case "time_on": startTime = String(value)
@@ -226,13 +226,17 @@ public class AdifReader {
             }
         }
 
-        if let startDate = startDate {
-            if let start = Self.parseDatetime(date: startDate, time: startTime) {
-                entry.startTime = start
-            }
-            if let end = Self.parseDatetime(date: endDate ?? startDate, time: endTime ?? startTime) {
-                entry.endTime = end
-            }
+        if let startDate = startDate,
+           let start = Self.parseDatetime(date: startDate, time: startTime)
+        {
+            entry.startTime = start
+            entry.endTime = start
+        }
+
+        if let endDate = endDate,
+           let end = Self.parseDatetime(date: endDate, time: endTime)
+        {
+            entry.endTime = end
         }
 
         return entry
@@ -250,15 +254,18 @@ public class AdifWriter {
 
     func writeHeader() {
         data = "### QLog ADIF Export\n"
-        write(field: "ADIF_VER", "3.1.3")
-        write(field: "PROGRAMID", "QLog")
+        write(field: "adif_ver", "3.1.3")
 
-        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
-            write(field: "PROGRAMVERSION", version)
+        if let programId = Bundle.main.infoDictionary?["CFBundleName"] as? String {
+            write(field: "programid", programId)
         }
 
-        write(field: "CREATED_TIMESTAMP", adifDateFormatterSeconds.string(from: Date()))
-        write(field: "EOH")
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
+            write(field: "programversion", version)
+        }
+
+        write(field: "created_timestamp", adifDateFormatterSeconds.string(from: Date()))
+        write(field: "eoh")
     }
 
     func write(field: String) {
@@ -292,7 +299,7 @@ public class AdifWriter {
         write(field: "app_qlog_logbook", entry.logbookId.map { $0.uuidString })
 
         write(field: "qso_date", adifDateFormatter.string(from: entry.startTime))
-        write(field: "time", adifTimeFormatter.string(from: entry.startTime))
+        write(field: "time_on", adifTimeFormatter.string(from: entry.startTime))
 
         write(field: "qso_date_off", adifDateFormatter.string(from: entry.endTime ?? entry.startTime))
         write(field: "time_off", adifTimeFormatter.string(from: entry.endTime ?? entry.startTime))
@@ -300,7 +307,7 @@ public class AdifWriter {
         write(field: "call", entry.callsign)
         write(field: "qth", entry.qth)
         write(field: "name", entry.name)
-        write(field: "freq", entry.freq)
+        write(field: "freq", entry.freq.map { Double($0)/1e6 })
         write(field: "band", entry.band?.rawValue)
         write(field: "mode", entry.mode?.rawValue)
         write(field: "submode", entry.submode)
@@ -325,9 +332,9 @@ public class AdifWriter {
         write(field: "qsl_sdate", entry.qslSdate.map { adifDateFormatter.string(from: $0) })
         write(field: "qsl_via", entry.qslVia)
         write(field: "lotw_qsl_rcvd", entry.lotwQslRcvd.rawValue)
-        write(field: "lotw_qsl_rdate", entry.lotwQslRdate.map { adifDateFormatter.string(from: $0) })
+        write(field: "lotw_qslrdate", entry.lotwQslRdate.map { adifDateFormatter.string(from: $0) })
         write(field: "lotw_qsl_sent", entry.lotwQslSent.rawValue)
-        write(field: "lotw_qsl_sdate", entry.lotwQslSdate.map { adifDateFormatter.string(from: $0) })
+        write(field: "lotw_qslsdate", entry.lotwQslSdate.map { adifDateFormatter.string(from: $0) })
         write(field: "tx_pwr", entry.txPwr)
         write(field: "comment", entry.comment)
         write(field: "notes", entry.notes)
@@ -342,8 +349,8 @@ public class AdifWriter {
         write(field: "station_callsign", entry.stationCallsign)
         write(field: "operator", entry.stationOperator)
         write(field: "contest_id", entry.contestId)
-        write(field: "serial_sent", entry.serialSent)
-        write(field: "serial_rcvd", entry.serialRcvd)
+        write(field: "stx", entry.serialSent)
+        write(field: "srx", entry.serialRcvd)
         write(field: "eor")
     }
 
