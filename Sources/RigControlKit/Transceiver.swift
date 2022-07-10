@@ -7,24 +7,23 @@
 
 import Foundation
 
-@available(iOS 15, macOS 12.0, *)
 public struct Transceiver: Identifiable, Hashable, Codable {
     public enum Interface: String, Hashable, Codable, CaseIterable {
         public static let allCases: [Transceiver.Interface] = [
             .none, .bluetooth, .serial, .network
         ]
-        
+
         case none
         case bluetooth
         case serial
         case network
     }
-    
+
     public enum Model: String, CustomStringConvertible, Hashable, Codable, CaseIterable {
         case none
         case ic705
         case ic7300
-        
+
         public var description: String {
             switch self {
             case .ic705: return "Icom IC-705"
@@ -33,7 +32,7 @@ public struct Transceiver: Identifiable, Hashable, Codable {
             }
         }
     }
-    
+
     public let id: UUID
     public var name: String
     public var model: Model
@@ -57,7 +56,6 @@ public struct Transceiver: Identifiable, Hashable, Codable {
     }
 }
 
-@available(iOS 15, macOS 12.0, *)
 extension Transceiver {
     public static var `default`: Transceiver {
         Transceiver(

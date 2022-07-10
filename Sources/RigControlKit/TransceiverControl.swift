@@ -42,7 +42,7 @@ extension TransceiverMode: CustomStringConvertible {
 // MARK: -
 public struct TransceiverState {
     private(set) public var status: TransceiverStatus = .disconnected
-    private(set) public var frequency: Frequency = 0
+    private(set) public var frequency: UInt64 = 0
     private(set) public var mode: TransceiverMode = .ssb
     private(set) public var sideband: TransceiverSideband = .usb
 

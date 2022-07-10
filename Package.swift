@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "HamRadioKit",
     platforms: [
-//        .macOS(.v12),
+        .macOS(.v12),
         .iOS(.v15)
     ],
     products: [
@@ -14,7 +14,7 @@ let package = Package(
         .library(
             name: "HamRadioKit",
             targets: ["HamRadioKit"]
-        )
+        ),
         .library(
             name: "RigControlKit",
             targets: ["RigControlKit"]

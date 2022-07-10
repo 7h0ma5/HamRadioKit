@@ -99,13 +99,13 @@ public class IcomTransceiverConnection: TransceiverControl {
         }
     }
 
-    private func updateFrequency(freq: Frequency) async throws {
+    private func updateFrequency(freq: UInt64) async throws {
         try await command([0x03], data: Self.frequencyArray(for: freq))
     }
 
-    private static func parseFrequency(from data: [UInt8]) -> Frequency? {
+    private static func parseFrequency(from data: [UInt8]) -> UInt64? {
         guard data.count == 5 else { return nil }
-        var result: Frequency = UInt64(data[0] & 0xF) * 1 + UInt64(data[0] >> 4) * 10
+        var result: UInt64 = UInt64(data[0] & 0xF) * 1 + UInt64(data[0] >> 4) * 10
         result += UInt64(data[1] & 0xF) * 100 + UInt64(data[1] >> 4) * 1_000
         result += UInt64(data[2] & 0xF) * 10_000 + UInt64(data[2] >> 4) * 100_000
         result += UInt64(data[3] & 0xF) * 1_000_000 + UInt64(data[3] >> 4) * 10_000_000
@@ -113,7 +113,7 @@ public class IcomTransceiverConnection: TransceiverControl {
         return result
     }
 
-    private static func frequencyArray(for frequency: Frequency) -> [UInt8] {
+    private static func frequencyArray(for frequency: UInt64) -> [UInt8] {
         return [
             UInt8(frequency % 1 / 1) | UInt8(frequency % 10 / 10) << 4 ,
             UInt8(frequency % 100 / 100) | UInt8(frequency % 1_000 / 1_000) << 4,

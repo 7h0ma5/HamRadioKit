@@ -12,7 +12,6 @@ import CoreBluetooth
 import UIKit
 #endif
 
-@available(iOS 15, macOS 12.0, *)
 @objc
 class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
     let connectionId: UUID
