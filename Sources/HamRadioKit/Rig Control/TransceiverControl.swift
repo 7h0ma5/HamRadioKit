@@ -7,6 +7,13 @@
 
 import Foundation
 
+public enum TransceiverStatus: CaseIterable {
+    case connected
+    case connecting
+    case disconnected
+    case error
+}
+
 public enum TransceiverMode: CaseIterable {
     case ssb
     case cw
@@ -34,9 +41,12 @@ extension TransceiverMode: CustomStringConvertible {
 
 // MARK: -
 public struct TransceiverState {
+    private(set) public var status: TransceiverStatus = .disconnected
     private(set) public var frequency: Frequency = 0
     private(set) public var mode: TransceiverMode = .ssb
     private(set) public var sideband: TransceiverSideband = .usb
+
+    public init() { }
 }
 
 // MARK: -
