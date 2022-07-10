@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import UniformTypeIdentifiers
 
 private let adifDateFormatter: DateFormatter = {
     let dateFormatter = DateFormatter()
