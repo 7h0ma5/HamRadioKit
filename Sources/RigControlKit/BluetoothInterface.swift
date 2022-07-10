@@ -7,10 +7,7 @@
 
 import Foundation
 import os
-
-#if canImport(CoreBluetooth)
 import CoreBluetooth
-#endif
 #if os(iOS)
 import UIKit
 #endif
