@@ -7,7 +7,7 @@
 
 import Foundation
 
-@available(iOS 15, macOS 12.0, *)
+#if !os(Linux)
 public struct Conditions {
     /// Solar flux index.
     public let flux: Int
@@ -46,3 +46,4 @@ public struct Conditions {
         return Double(obj.last![2])!
     }
 }
+#endif
