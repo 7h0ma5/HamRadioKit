@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ClusterSpot: Codable {
+public struct ClusterSpot: Codable, Equatable {
     public let id: UUID
     public let callsign: String
     public let spotter: String
