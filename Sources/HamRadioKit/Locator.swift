@@ -24,7 +24,11 @@ public extension Locator {
         )
     }()
 
-    @available(iOS 15, macOS 12.0, *)
+    var isValid: Bool {
+        Self.regex.firstMatch(in: self, range: NSRange(location: 0, length: self.count)) != nil
+    }
+
+    #if canImport(CoreLocation)
     func distance(from other: Locator) -> CLLocationDistance? {
         if let thisLocation = self.centerLocation {
             if let otherLocation = other.centerLocation {
@@ -34,11 +38,6 @@ public extension Locator {
         return nil
     }
 
-    var isValid: Bool {
-        Self.regex.firstMatch(in: self, range: NSRange(location: 0, length: self.count)) != nil
-    }
-
-    @available(iOS 15, macOS 12.0, *)
     var coordinate: CLLocationCoordinate2D? {
         guard isValid else { return nil }
 
@@ -80,7 +79,6 @@ public extension Locator {
         return CLLocationCoordinate2D(latitude: lat, longitude: lon)
     }
 
-    @available(iOS 15, macOS 12.0, *)
     var center: CLLocationCoordinate2D? {
         guard var coordinate = coordinate else { return nil }
 
@@ -107,27 +105,12 @@ public extension Locator {
         }
     }
 
-    @available(iOS 15, macOS 12.0, *)
-    var region: MKCoordinateRegion? {
-        guard let center = self.center else { return nil }
-        
-        return MKCoordinateRegion(
-            center: center,
-            span: MKCoordinateSpan(
-                latitudeDelta: precision.latitude*1.5,
-                longitudeDelta: precision.longitude*1.5
-            )
-        )
-    }
-
-    @available(iOS 15, macOS 12.0, *)
     var centerLocation: CLLocation? {
         guard let center = self.center else { return nil }
 
         return CLLocation(latitude: center.latitude, longitude: center.longitude)
     }
 
-    @available(iOS 15, macOS 12.0, *)
     var polygon: [CLLocationCoordinate2D]? {
         guard let coordinate = self.coordinate else { return nil }
 
@@ -150,6 +133,21 @@ public extension Locator {
             )
         ]
     }
+    #endif
+
+    #if canImport(MapKit)
+    var region: MKCoordinateRegion? {
+        guard let center = self.center else { return nil }
+        
+        return MKCoordinateRegion(
+            center: center,
+            span: MKCoordinateSpan(
+                latitudeDelta: precision.latitude*1.5,
+                longitudeDelta: precision.longitude*1.5
+            )
+        )
+    }
+    #endif
 }
 
 extension Locator: Identifiable {
