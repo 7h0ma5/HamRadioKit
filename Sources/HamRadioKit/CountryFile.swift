@@ -70,7 +70,12 @@ public class CountryFile {
             create: true
         ) else { return }
 
-        path.appendPathComponent(Bundle.main.bundleIdentifier!)
+        if let bundleId = Bundle.main.bundleIdentifier {
+            path.appendPathComponent(bundleId)
+        }
+        else {
+            path.appendPathComponent("HamRadioKit")
+        }
 
         do {
             try FileManager.default.createDirectory(
