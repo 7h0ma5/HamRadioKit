@@ -23,6 +23,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/drmohundro/SWXMLHash", from: "7.0.0")
     ],
     targets: [
@@ -31,11 +32,14 @@ let package = Package(
         .target(
             name: "HamRadioKit",
             dependencies: [
-                "SWXMLHash"
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "SWXMLHash", package: "SWXMLHash")
             ]),
         .target(
             name: "RigControlKit",
-            dependencies: []
+            dependencies: [
+                .product(name: "Logging", package: "swift-log"),
+            ]
         ),
         .testTarget(
             name: "HamRadioKitTests",
