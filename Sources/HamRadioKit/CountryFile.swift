@@ -150,6 +150,16 @@ public class CountryFile {
             Self.logger.info("Initial country file update")
         }
 
+        // URLSession.shared.data is not yet implemented in FoundationNetworking
+        #if canImport(FoundationNetworking)
+        let rawData: Data? = await withCheckedContinuation { continuation in
+            URLSession.shared.dataTask(with: Self.url) { data, _, _ in
+                continuation.resume(returning: data)
+            }.resume()
+        }
+
+        guard let rawData = rawData else { return }
+        #else
         let (rawData, response) = try await URLSession.shared.data(from: Self.url)
 
         guard let httpResponse = response as? HTTPURLResponse,
@@ -158,6 +168,7 @@ public class CountryFile {
             Self.logger.warning("Failed to download country file")
             return
         }
+        #endif
 
         let data = String(decoding: rawData, as: UTF8.self)[...]
 
