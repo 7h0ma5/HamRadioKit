@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import Logging
 import CoreBluetooth
+import os
 #if os(iOS)
 import UIKit
 #endif
@@ -29,7 +29,8 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
     @Published var status: TransceiverInterfaceStatus = .disconnected
     
     private static let logger = Logger(
-        label: String(describing: BluetoothInterface.self)
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: String(describing: BluetoothInterface.self)
     )
     
     init(connectionId: UUID) {
