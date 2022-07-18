@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AsyncAlgorithms
 
 public enum TransceiverInterfaceStatus {
     case disconnected
@@ -16,9 +17,8 @@ public enum TransceiverInterfaceStatus {
 
 public protocol TransceiverInterface {
     var status: TransceiverInterfaceStatus { get }
+    var commands: AsyncChannel<Data> { get }
 
-    var onCommand: ((Data) -> Bool)? { get set }
-    
     func connect() async throws
     func command(_ cmd: Data) async throws -> Data?
 }

@@ -45,13 +45,13 @@ public struct Transceiver: Identifiable, Hashable, Codable {
         self.interface = interface
     }
 
-    public func connection() -> (any TransceiverControl)? {
+    public func connection() async -> any TransceiverControl {
         switch self.model {
         case .ic705:
             let interface = BluetoothInterface(connectionId: self.id)
-            return IcomTransceiverConnection(interface: interface)
+            return await IcomTransceiverConnection(interface: interface)
         default:
-            return nil
+            return DummyTransceiverConnection()
         }
     }
 }
@@ -64,5 +64,16 @@ extension Transceiver {
             model: .none,
             interface: .none
         )
+    }
+}
+
+extension Transceiver.Interface: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .none: return String(localized: "No Interface")
+        case .bluetooth: return String(localized: "Bluetooth")
+        case .serial: return String(localized: "Serial")
+        case .network: return String(localized: "Network")
+        }
     }
 }

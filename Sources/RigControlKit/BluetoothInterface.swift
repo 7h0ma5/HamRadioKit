@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreBluetooth
+import AsyncAlgorithms
 import os
 #if os(iOS)
 import UIKit
@@ -17,16 +18,16 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
     let connectionId: UUID
     let serviceId = CBUUID(string: "14CF8001-1EC2-D408-1B04-2EB270F14203")
     let characteristicId = CBUUID(string: "14CF8002-1EC2-D408-1B04-2EB270F14203")
-   
-    var onCommand: ((Data) -> Bool)?
-    
+
+    public var commands = AsyncChannel(element: Data.self)
+
     var centralManager: CBCentralManager!
     var peripheral: CBPeripheral?
     var service: CBService?
     var characteristic: CBCharacteristic?
     var descriptor: CBDescriptor?
     
-    @Published var status: TransceiverInterfaceStatus = .disconnected
+    var status: TransceiverInterfaceStatus = .disconnected
     
     private static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
@@ -44,11 +45,10 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
         )
     }
 
+    @MainActor
     func connect() async throws {
-        DispatchQueue.main.async {
-            self.status = .connecting
-        }
-        
+        self.status = .connecting
+
         if let peripheral = peripheral {
             Self.logger.info("Trying to connect \(peripheral.name.debugDescription) \(peripheral.identifier)...")
             centralManager.connect(peripheral)
@@ -57,7 +57,8 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
             centralManager.scanForPeripherals(withServices: [serviceId], options: nil)
         }
     }
-    
+
+    @MainActor
     func command(_ cmd: Data) -> Data? {
         if status == .connected,
            let peripheral = peripheral,
@@ -102,13 +103,13 @@ extension BluetoothInterface: CBPeripheralDelegate {
         self.characteristic = characteristic
 
         peripheral.setNotifyValue(true, for: characteristic)
-        
+
         Self.logger.info("Sending identification...")
 
         let uuid = withUnsafePointer(to: self.connectionId.uuid) {
             Data(bytes: $0, count: MemoryLayout.size(ofValue: self.connectionId.uuid))
         }
-    
+
         peripheral.writeValue(Data([0xFE, 0xF1, 0x00, 0x61] + uuid + [0xFD]), for: characteristic, type: .withResponse)
 
         // peripheral.discoverDescriptors(for: characteristic)
@@ -149,11 +150,12 @@ extension BluetoothInterface: CBPeripheralDelegate {
         while slice.starts(with: [0xfe, 0xfe]) {
             let cmd = slice.prefix(while: { $0 != 0xfd }) + [0xfd]
             slice = slice.dropFirst(cmd.count)
-            let acknowledge = self.onCommand?(Data(cmd)) ?? false
 
-            if acknowledge {
-                peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]), for: characteristic, type: .withoutResponse)
+            Task {
+                await self.commands.send(Data(cmd))
             }
+
+            peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]), for: characteristic, type: .withoutResponse)
         }
 
         if data.starts(with: [0xfe, 0xf1, 0x00]) && data.count > 3 {

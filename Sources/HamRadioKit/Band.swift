@@ -52,11 +52,11 @@ public enum Band: String, CaseIterable, Codable, CustomStringConvertible {
     public static func find(byName name: String) -> Band? {
         Band(rawValue: name)
     }
-    
+
     public static func find(forFreq freq: Frequency) -> Band? {
         return Band.allCases.first(where: { $0.freqRange.contains(freq) })
     }
-    
+
     public var freqRange: ClosedRange<Frequency> {
         switch self {
         case ._2190m: return 136_000...137_000

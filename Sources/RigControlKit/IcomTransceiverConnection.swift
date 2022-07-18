@@ -6,34 +6,51 @@
 //
 
 import Foundation
+import AsyncAlgorithms
 
 public class IcomTransceiverConnection: TransceiverControl {
+    public var stateChannel = AsyncChannel(element: TransceiverState.self)
+    private var state = TransceiverState()
+
     var interface: any TransceiverInterface
-    
+
     let ctrlAddress: UInt8 = 0xe0
     let trxAddress: UInt8 = 0xa4
 
-    init(interface: any TransceiverInterface) {
+    init(interface: any TransceiverInterface) async {
         self.interface = interface
-        self.interface.onCommand = self.onCommand
     }
 
     public func connect() async throws {
         try await self.interface.connect()
+
+        Task {
+            for await cmd in interface.commands {
+                await self.onCommand(data: cmd)
+            }
+        }
+
+        Task {
+            while true {
+                self.state.frequency += 1000
+                await self.stateChannel.send(self.state)
+                try await Task.sleep(nanoseconds: UInt64(1e9))
+            }
+        }
     }
-        
+
     func command(_ cmd: [UInt8], data: [UInt8]?) async throws -> [UInt8] {
         let commandBytes: [UInt8] = [
             0xfe, 0xfe,
             trxAddress, ctrlAddress
         ] +  cmd + (data ?? []) + [0xfd]
-        
+
         let response = try await interface.command(Data(commandBytes))
-        
+
         return [UInt8](response ?? Data())
     }
 
-    func onCommand(data: Data) -> Bool {
+    func onCommand(data: Data) async -> Bool {
         guard data.starts(with: [0xfe, 0xfe]) && data.count >= 5 else {
             debugPrint("Invalid CI-V command")
             return false
@@ -53,7 +70,11 @@ public class IcomTransceiverConnection: TransceiverControl {
 
         switch data[4] {
         case 0x00:
-            let freq = Self.parseFrequency(from: [UInt8](data[5...9]))
+            if let freq = Self.parseFrequency(from: [UInt8](data[5...9])) {
+                self.state.frequency = freq
+                await self.stateChannel.send(self.state)
+                debugPrint(freq)
+            }
 
         case 0x01:
             debugPrint("received mode data (transceive)")
@@ -72,7 +93,7 @@ public class IcomTransceiverConnection: TransceiverControl {
         return true
     }
 
-    public func change(frequency: Double) async throws {
+    public func change(frequency: UInt64) async throws {
 
     }
 

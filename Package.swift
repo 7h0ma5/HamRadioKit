@@ -24,7 +24,8 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
-        .package(url: "https://github.com/drmohundro/SWXMLHash", from: "7.0.0")
+        .package(url: "https://github.com/drmohundro/SWXMLHash", from: "7.0.0"),
+        .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -38,7 +39,8 @@ let package = Package(
         .target(
             name: "RigControlKit",
             dependencies: [
-                .product(name: "Logging", package: "swift-log"),
+                .product(name: "AsyncAlgorithms", package: "swift-async-algorithms"),
+                .product(name: "Logging", package: "swift-log")
             ]
         ),
         .testTarget(

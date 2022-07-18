@@ -143,12 +143,12 @@ extension LogEntry {
     private static func randomSuffix() -> String {
         let length = Int.random(in: 2...3)
         let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        return String((0..<length).map{ _ in letters.randomElement()! })
+        return String((0..<length).map { _ in letters.randomElement()! })
     }
 
     static let names: [String] = [
         "Maria", "Jose", "Mohammed", "Anna", "John", "Ali",
-        "Robert", "Jean",  "Elena", "Min", "Paul", "Sarah"
+        "Robert", "Jean", "Elena", "Min", "Paul", "Sarah"
     ]
 
     // swiftlint:disable:next large_tuple

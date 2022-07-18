@@ -51,9 +51,9 @@ private struct AdifField {
 public class AdifReader {
     private var data: Substring
     private var header: AdifHeader?
-    
+
     private var initialCount: Int
-    
+
     static func parseDatetime(date: String, time: String?) -> Date? {
         if let time = time {
             if time.count == 4 {
@@ -70,16 +70,16 @@ public class AdifReader {
             return adifDateFormatter.date(from: date)
         }
     }
-    
+
     public init(data: Substring) {
         self.data = data
-        self.initialCount = data.count
+        self.initialCount = self.data.maximumLengthOfBytes(using: .utf8)
     }
-    
+
     public var progress: Double {
-        (Double(initialCount) / Double(data.count)) - 1.0
+        1.0 - (Double(self.data.maximumLengthOfBytes(using: .utf8)) / Double(self.initialCount))
     }
-    
+
     private func readField() -> AdifField? {
         data = data.drop(while: { $0 != "<" }).dropFirst()
 
@@ -106,27 +106,27 @@ public class AdifReader {
 
         if data.isEmpty { return nil }
 
-        let length = Int(size) ?? 0;
+        let length = Int(size) ?? 0
         if length == 0 || data.isEmpty { return nil }
 
         let value = data.prefix(length)
-        data = data.dropFirst(length);
+        data = data.dropFirst(length)
 
         return AdifField(name: name, value: value)
     }
 
     private func readHeader() {
         if data.starts(with: "<") {
-            self.header = Optional.some(AdifHeader(fields: []));
-            return;
+            self.header = Optional.some(AdifHeader(fields: []))
+            return
         }
 
-        var fields: [AdifField] = [];
+        var fields: [AdifField] = []
 
         while let field = readField() {
             if field.name.lowercased() == "eoh" {
                 header = AdifHeader(fields: fields)
-                return;
+                return
             }
             fields.append(field)
         }
@@ -146,7 +146,7 @@ public class AdifReader {
             fields.append(field)
         }
 
-        return nil;
+        return nil
     }
 
     // TODO: Refactor this function
