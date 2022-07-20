@@ -26,17 +26,17 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
     var service: CBService?
     var characteristic: CBCharacteristic?
     var descriptor: CBDescriptor?
-    
+
     var status: TransceiverInterfaceStatus = .disconnected
-    
+
     private static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: BluetoothInterface.self)
     )
-    
+
     init(connectionId: UUID) {
         self.connectionId = connectionId
-        
+
         super.init()
 
         centralManager = CBCentralManager(
@@ -63,8 +63,8 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
         if status == .connected,
            let peripheral = peripheral,
            let characteristic = characteristic,
-           characteristic.isNotifying
-        {
+           characteristic.isNotifying {
+
             Self.logger.trace("Writing \((cmd as NSData).debugDescription)")
 
             //peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]), for: characteristic, type: .withoutResponse)
@@ -77,7 +77,9 @@ class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
 
 @available(iOS 15, macOS 12.0, *)
 extension BluetoothInterface: CBPeripheralDelegate {
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didDiscoverServices error: Error?) {
+
         guard let services = peripheral.services else {
             return
         }
@@ -89,8 +91,11 @@ extension BluetoothInterface: CBPeripheralDelegate {
 
         peripheral.discoverCharacteristics([characteristicId], for: service)
     }
-     
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+
+    func peripheral(_ peripheral: CBPeripheral,
+                    didDiscoverCharacteristicsFor service: CBService,
+                    error: Error?) {
+
         Self.logger.debug("Found characteristics: \(service.characteristics.debugDescription)")
         error.map { Self.logger.error("\($0.localizedDescription)") }
 
@@ -115,7 +120,10 @@ extension BluetoothInterface: CBPeripheralDelegate {
         // peripheral.discoverDescriptors(for: characteristic)
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didDiscoverDescriptorsFor characteristic: CBCharacteristic,
+                    error: Error?) {
+
         guard let descriptors = characteristic.descriptors else {
             return
         }
@@ -125,19 +133,28 @@ extension BluetoothInterface: CBPeripheralDelegate {
         self.descriptor = descriptor
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didUpdateNotificationStateFor characteristic: CBCharacteristic,
+                    error: Error?) {
+
         assert(self.characteristic == characteristic)
         Self.logger.debug("Notification status updated for \(characteristic.debugDescription).")
         error.map { Self.logger.error("\($0.localizedDescription)") }
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didWriteValueFor characteristic: CBCharacteristic,
+                    error: Error?) {
         Self.logger.trace("Value written: \(characteristic.value.map { ($0 as NSData).debugDescription } ?? "")")
         error.map { Self.logger.error("\($0.localizedDescription)") }
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    func peripheral(_ peripheral: CBPeripheral,
+                    didUpdateValueFor characteristic: CBCharacteristic,
+                    error: Error?) {
+
         Self.logger.trace("Value received: \(characteristic.value.map { ($0 as NSData).debugDescription } ?? "")")
+
         error.map { Self.logger.error("\($0.localizedDescription)") }
 
         guard error == nil else {
@@ -155,7 +172,8 @@ extension BluetoothInterface: CBPeripheralDelegate {
                 await self.commands.send(Data(cmd))
             }
 
-            peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]), for: characteristic, type: .withoutResponse)
+            peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]),
+                                  for: characteristic, type: .withoutResponse)
         }
 
         if data.starts(with: [0xfe, 0xf1, 0x00]) && data.count > 3 {
@@ -179,21 +197,21 @@ extension BluetoothInterface: CBPeripheralDelegate {
                 #elseif os(macOS)
                 name = "QLog on macOS"
                 #endif
-                
+
                 let id = Data(name.padding(toLength: 16, withPad: " ", startingAt: 0).utf8)
 
-                peripheral.writeValue([0xfe, 0xf1, 0x00, 0x62] + id + [0xfd], for: characteristic, type: .withResponse)
+                peripheral.writeValue([0xfe, 0xf1, 0x00, 0x62] + id + [0xfd],
+                                      for: characteristic, type: .withResponse)
 
             case 0x63:
                 Self.logger.debug("Handle connection request (0x63)")
-                peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x63, 0x0b, 0xa3, 0x98, 0x3c, 0xfd]), for: characteristic, type: .withResponse)
+                peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x63, 0x0b, 0xa3, 0x98, 0x3c, 0xfd]),
+                                      for: characteristic, type: .withResponse)
                 return
 
             case 0x64:
                 Self.logger.info("Connection successful!")
-                DispatchQueue.main.async {
-                    self.status = .connected
-                }
+                self.status = .connected
                 return
 
             default:
@@ -229,15 +247,15 @@ extension BluetoothInterface: CBCentralManagerDelegate {
         }
 
         if let newStatus = newStatus {
-            DispatchQueue.main.async {
-                self.status = newStatus
-            }
+            self.status = newStatus
         }
     }
 
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
-                        advertisementData: [String: Any], rssi RSSI: NSNumber)
-    {
+    func centralManager(_ central: CBCentralManager,
+                        didDiscover peripheral: CBPeripheral,
+                        advertisementData: [String: Any],
+                        rssi RSSI: NSNumber) {
+
         Self.logger.debug("Discovered \(peripheral.debugDescription), RSSI: \(RSSI.debugDescription)")
 
         peripheral.delegate = self
@@ -250,15 +268,16 @@ extension BluetoothInterface: CBCentralManagerDelegate {
         }
     }
 
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    func centralManager(_ central: CBCentralManager,
+                        didFailToConnect peripheral: CBPeripheral,
+                        error: Error?) {
+
         Self.logger.warning("Bluetooth failed to connect!")
         error.map { Self.logger.error("\($0.localizedDescription)") }
 
         assert(peripheral == self.peripheral!)
 
-        DispatchQueue.main.async {
-            self.status = .disconnected
-        }
+        self.status = .disconnected
     }
 
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -269,7 +288,10 @@ extension BluetoothInterface: CBCentralManagerDelegate {
         peripheral.discoverServices([serviceId])
     }
 
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+    func centralManager(_ central: CBCentralManager,
+                        didDisconnectPeripheral peripheral: CBPeripheral,
+                        error: Error?) {
+
         Self.logger.info("Bluetooth device disconnected!")
         error.map { Self.logger.error("\($0.localizedDescription)") }
 
@@ -278,8 +300,6 @@ extension BluetoothInterface: CBCentralManagerDelegate {
         self.characteristic = nil
         self.descriptor = nil
 
-        DispatchQueue.main.async {
-            self.status = .disconnected
-        }
+        self.status = .disconnected
     }
 }

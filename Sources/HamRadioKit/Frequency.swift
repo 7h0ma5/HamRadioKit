@@ -20,7 +20,7 @@ public extension Frequency {
                     .precision(.fractionLength(3))
         )
     #endif
- 
+
     init?<S>(fromMegaHertz data: S) where S: StringProtocol {
         if let doubleValue = Double(data) {
             self = UInt64((doubleValue * 1e6).rounded())

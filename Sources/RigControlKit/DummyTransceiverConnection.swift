@@ -13,13 +13,7 @@ public class DummyTransceiverConnection: ObservableObject, TransceiverControl {
     private var state = TransceiverState()
 
     public init() {
-        Task {
-            while true {
-                self.state.frequency += 1000
-                await self.stateChannel.send(self.state)
-                try await Task.sleep(nanoseconds: 1000000000)
-            }
-        }
+
     }
 
     public func connect() async throws {
@@ -32,9 +26,8 @@ public class DummyTransceiverConnection: ObservableObject, TransceiverControl {
         await self.stateChannel.send(self.state)
     }
 
-    public func change(mode: TransceiverMode, sideband: TransceiverSideband) async throws {
+    public func change(mode: TransceiverMode) async throws {
         self.state.mode = mode
-        self.state.sideband = sideband
         await self.stateChannel.send(self.state)
     }
 }

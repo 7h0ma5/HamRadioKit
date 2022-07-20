@@ -14,17 +14,18 @@ public enum TransceiverStatus: CaseIterable {
     case error
 }
 
-public enum TransceiverMode: CaseIterable {
-    case ssb
-    case cw
-    case am
-    case fm
-    case rtty
-}
-
-public enum TransceiverSideband {
+public enum TransceiverSideband  {
     case usb
     case lsb
+}
+
+// swiftlint:disable:next identifier_name
+public enum TransceiverMode {
+    case ssb(TransceiverSideband)
+    case cw(TransceiverSideband)
+    case am
+    case fm
+    case rtty(TransceiverSideband)
 }
 
 extension TransceiverMode: CustomStringConvertible {
@@ -42,9 +43,8 @@ extension TransceiverMode: CustomStringConvertible {
 // MARK: -
 public struct TransceiverState {
     public var status: TransceiverStatus = .disconnected
-    public var frequency: UInt64 = 0
-    public var mode: TransceiverMode = .ssb
-    public var sideband: TransceiverSideband = .usb
+    public var frequency: UInt64 = 14_000_000
+    public var mode: TransceiverMode = .ssb(.usb)
 
     public init() { }
 }

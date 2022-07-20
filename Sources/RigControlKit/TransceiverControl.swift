@@ -13,5 +13,5 @@ public protocol TransceiverControl {
 
     func connect() async throws
     func change(frequency: UInt64) async throws
-    func change(mode: TransceiverMode, sideband: TransceiverSideband) async throws
+    func change(mode: TransceiverMode) async throws
 }
