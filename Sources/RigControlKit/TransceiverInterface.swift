@@ -8,6 +8,12 @@
 import Foundation
 import AsyncAlgorithms
 
+public struct TransceiverInterfaceError: Error {
+
+}
+
+public typealias TransceiverInterfaceEventChannel = AsyncChannel<TransceiverInterfaceEvent>
+
 public enum TransceiverInterfaceStatus {
     case disconnected
     case connecting
@@ -15,11 +21,13 @@ public enum TransceiverInterfaceStatus {
     case error
 }
 
-public protocol TransceiverInterface {
-    var status: TransceiverInterfaceStatus { get }
-    var commands: AsyncChannel<Data> { get }
+public enum TransceiverInterfaceEvent {
+    case statusUpdated(TransceiverInterfaceStatus)
+    case dataReceived(Data)
+}
 
-    func connect() async throws
+public protocol TransceiverInterface {
+    var events: TransceiverInterfaceEventChannel { get }
     func command(_ cmd: Data) async throws -> Data?
 }
 

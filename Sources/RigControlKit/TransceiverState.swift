@@ -14,19 +14,31 @@ public enum TransceiverStatus: CaseIterable {
     case error
 }
 
-public enum TransceiverSideband  {
+extension TransceiverStatus: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .connected: return "Connected"
+        case .connecting: return "Connecting"
+        case .disconnected: return "Disconnected"
+        case .error: return "Error"
+        }
+    }
+}
+
+public enum TransceiverSideband: Hashable {
     case usb
     case lsb
 }
 
-// swiftlint:disable:next identifier_name
-public enum TransceiverMode {
+// swiftlint:disable identifier_name
+public enum TransceiverMode: Hashable {
     case ssb(TransceiverSideband)
     case cw(TransceiverSideband)
     case am
     case fm
     case rtty(TransceiverSideband)
 }
+// swiftlint:enable identifier_name
 
 extension TransceiverMode: CustomStringConvertible {
     public var description: String {

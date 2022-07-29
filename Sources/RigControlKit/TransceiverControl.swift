@@ -8,9 +8,11 @@
 import Foundation
 import AsyncAlgorithms
 
-public protocol TransceiverControl {
-    var stateChannel: AsyncChannel<TransceiverState> { get }
+public struct TransceiverControlError: Error {
 
+}
+
+public protocol TransceiverControl {
     func connect() async throws
     func change(frequency: UInt64) async throws
     func change(mode: TransceiverMode) async throws

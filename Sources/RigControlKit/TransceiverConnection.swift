@@ -6,21 +6,25 @@
 //
 
 import Foundation
+import AsyncAlgorithms
 
-@globalActor
 public actor TransceiverConnection {
-    public static var shared = TransceiverConnection()
+    public var stateChannel = AsyncChannel(element: TransceiverState.self)
 
     public var transceiver: Transceiver?
     public var control: any TransceiverControl
 
     public init() {
-        self.control = DummyTransceiverConnection()
+        control = DummyTransceiverConnection(channel: stateChannel)
     }
 
     public func connect(transceiver: Transceiver) async {
+        if self.transceiver != nil {
+            await self.disconnect()
+        }
+
         self.transceiver = transceiver
-        self.control = await transceiver.connection()
+        self.control = await transceiver.connection(channel: stateChannel)
 
         do {
             try await self.control.connect()
@@ -28,5 +32,10 @@ public actor TransceiverConnection {
         catch {
             debugPrint("Failed to connect!")
         }
+    }
+
+    public func disconnect() async {
+        self.transceiver = nil
+        self.control = DummyTransceiverConnection(channel: stateChannel)
     }
 }

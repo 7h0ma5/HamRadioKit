@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AsyncAlgorithms
 
 public struct Transceiver: Identifiable, Hashable, Codable {
     public enum Interface: String, Hashable, Codable, CaseIterable {
@@ -45,13 +46,13 @@ public struct Transceiver: Identifiable, Hashable, Codable {
         self.interface = interface
     }
 
-    public func connection() async -> any TransceiverControl {
+    public func connection(channel: AsyncChannel<TransceiverState>) async -> any TransceiverControl {
         switch self.model {
         case .ic705:
             let interface = BluetoothInterface(connectionId: self.id)
-            return await IcomTransceiverConnection(interface: interface)
+            return await IcomTransceiverConnection(interface: interface, channel: channel)
         default:
-            return DummyTransceiverConnection()
+            return DummyTransceiverConnection(channel: channel)
         }
     }
 }

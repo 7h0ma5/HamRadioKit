@@ -9,11 +9,14 @@ import Foundation
 import AsyncAlgorithms
 
 public class DummyTransceiverConnection: ObservableObject, TransceiverControl {
-    public var stateChannel = AsyncChannel(element: TransceiverState.self)
+    public var stateChannel: AsyncChannel<TransceiverState>
     private var state = TransceiverState()
 
-    public init() {
-
+    required public init(channel: AsyncChannel<TransceiverState>) {
+        self.stateChannel = channel
+        Task {
+            await self.stateChannel.send(state)
+        }
     }
 
     public func connect() async throws {

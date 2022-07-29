@@ -15,67 +15,61 @@ import UIKit
 
 @objc
 class BluetoothInterface: NSObject, TransceiverInterface, ObservableObject {
+    var events: TransceiverInterfaceEventChannel
+
     let connectionId: UUID
     let serviceId = CBUUID(string: "14CF8001-1EC2-D408-1B04-2EB270F14203")
     let characteristicId = CBUUID(string: "14CF8002-1EC2-D408-1B04-2EB270F14203")
 
-    public var commands = AsyncChannel(element: Data.self)
-
-    var centralManager: CBCentralManager!
+    private var centralManager: CBCentralManager!
     var peripheral: CBPeripheral?
     var service: CBService?
     var characteristic: CBCharacteristic?
     var descriptor: CBDescriptor?
 
-    var status: TransceiverInterfaceStatus = .disconnected
+    var commandContinuation: CheckedContinuation<Data?, Error>?
+
+    var status: TransceiverInterfaceStatus = .disconnected {
+        didSet {
+            Task {
+                await self.events.send(.statusUpdated(self.status))
+            }
+        }
+    }
 
     private static let logger = Logger(
         subsystem: Bundle.main.bundleIdentifier!,
         category: String(describing: BluetoothInterface.self)
     )
 
-    init(connectionId: UUID) {
+    required init(connectionId: UUID) {
         self.connectionId = connectionId
+        self.events = TransceiverInterfaceEventChannel()
 
         super.init()
 
         centralManager = CBCentralManager(
             delegate: self,
-            queue: DispatchQueue.global(qos: .default)
+            queue: nil
         )
     }
 
-    @MainActor
-    func connect() async throws {
-        self.status = .connecting
-
-        if let peripheral = peripheral {
-            Self.logger.info("Trying to connect \(peripheral.name.debugDescription) \(peripheral.identifier)...")
-            centralManager.connect(peripheral)
-        }
-        else {
-            centralManager.scanForPeripherals(withServices: [serviceId], options: nil)
-        }
-    }
-
-    @MainActor
-    func command(_ cmd: Data) -> Data? {
-        if status == .connected,
+    func command(_ cmd: Data) async throws -> Data? {
+        guard status == .connected,
            let peripheral = peripheral,
            let characteristic = characteristic,
-           characteristic.isNotifying {
+           characteristic.isNotifying
+        else { throw TransceiverInterfaceError() }
 
-            Self.logger.trace("Writing \((cmd as NSData).debugDescription)")
+        Self.logger.trace("Writing \((cmd as NSData).debugDescription)")
 
-            //peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]), for: characteristic, type: .withoutResponse)
+        return try await withCheckedThrowingContinuation { continuation in
+            commandContinuation = continuation
             peripheral.writeValue(cmd, for: characteristic, type: .withResponse)
         }
-
-        return nil
     }
 }
 
-@available(iOS 15, macOS 12.0, *)
 extension BluetoothInterface: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral,
                     didDiscoverServices error: Error?) {
@@ -168,12 +162,18 @@ extension BluetoothInterface: CBPeripheralDelegate {
             let cmd = slice.prefix(while: { $0 != 0xfd }) + [0xfd]
             slice = slice.dropFirst(cmd.count)
 
-            Task {
-                await self.commands.send(Data(cmd))
-            }
-
             peripheral.writeValue(Data([0xfe, 0xf1, 0x00, 0x60, 0xfb, 0xfd]),
                                   for: characteristic, type: .withoutResponse)
+
+            if let commandContinuation = commandContinuation {
+                commandContinuation.resume(returning: Data(cmd))
+                self.commandContinuation = nil
+            }
+            else {
+                Task {
+                    await self.events.send(.dataReceived(Data(cmd)))
+                }
+            }
         }
 
         if data.starts(with: [0xfe, 0xf1, 0x00]) && data.count > 3 {
@@ -221,33 +221,27 @@ extension BluetoothInterface: CBPeripheralDelegate {
     }
 }
 
-@available(iOS 15, macOS 12.0, *)
 extension BluetoothInterface: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        var newStatus: TransceiverInterfaceStatus?
+        Self.logger.debug("Bluetooth status updated: \(central.state.rawValue)")
 
         switch central.state {
         case .poweredOn:
-        Task.init {
-            try await connect()
-        }
-
+            Self.logger.info("Starting scan for peripherals!")
+            centralManager.scanForPeripherals(withServices: [serviceId], options: nil)
+            self.status = .connecting
         case .poweredOff:
-            newStatus = .disconnected
+            self.status = .disconnected
         case .unauthorized:
-            newStatus = .disconnected
+            self.status = .disconnected
         case .unsupported:
-            newStatus = .disconnected
+            self.status = .disconnected
         case .resetting:
-            newStatus = .disconnected
+            self.status = .disconnected
         case .unknown:
-            newStatus = .disconnected
+            self.status = .disconnected
         default:
             Self.logger.warning("Unknown Bluetooth state: \(central.state.rawValue)")
-        }
-
-        if let newStatus = newStatus {
-            self.status = newStatus
         }
     }
 
@@ -263,9 +257,8 @@ extension BluetoothInterface: CBCentralManagerDelegate {
 
         self.centralManager.stopScan()
 
-        Task.init {
-            try await connect()
-        }
+        Self.logger.info("Trying to connect \(peripheral.name.debugDescription) \(peripheral.identifier)...")
+        centralManager.connect(peripheral)
     }
 
     func centralManager(_ central: CBCentralManager,
