@@ -226,15 +226,15 @@ public class AdifReader {
         }
 
         if let startDate = startDate,
-           let start = Self.parseDatetime(date: startDate, time: startTime)
-        {
+           let start = Self.parseDatetime(date: startDate, time: startTime) {
+
             entry.startTime = start
             entry.endTime = start
         }
 
         if let endDate = endDate,
-           let end = Self.parseDatetime(date: endDate, time: endTime)
-        {
+           let end = Self.parseDatetime(date: endDate, time: endTime) {
+
             entry.endTime = end
         }
 
