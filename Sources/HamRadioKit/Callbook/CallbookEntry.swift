@@ -13,5 +13,5 @@ public struct CallbookEntry {
     public let qth: String?
     public let gridsquare: Locator?
     public let country: String?
-    public let dxccId: Int64?
+    public let dxccId: DXCC?
 }

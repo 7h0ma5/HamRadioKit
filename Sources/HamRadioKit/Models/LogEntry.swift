@@ -42,7 +42,7 @@ public struct LogEntry: Codable, Identifiable, Hashable, Equatable {
         }
     }
     public var submode: String?
-    public var dxcc: UInt64?
+    public var dxcc: DXCC?
     private(set) public var dxccMode: DXCCMode?
     public var cqz: UInt64?
     public var ituz: UInt64?

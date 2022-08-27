@@ -80,7 +80,7 @@ public class HamQTH: Callbook {
             qth: result["qth"].element?.text,
             gridsquare: result["grid"].element?.text,
             country: result["country"].element?.text,
-            dxccId: (result["adif"].element?.text).flatMap(Int64.init)
+            dxccId: (result["adif"].element?.text).flatMap(DXCC.init)
         )
     }
 }

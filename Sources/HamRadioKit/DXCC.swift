@@ -13,7 +13,7 @@ public enum DXCCMode: String, Codable {
     case digital = "DIGITAL"
 }
 
-public typealias DXCC = UInt64
+public typealias DXCC = UInt16
 
 public extension DXCC {
     var iso: String? {

@@ -184,7 +184,7 @@ public class AdifReader {
             case "cqz": entry.cqz = UInt64(value)
             case "ituz": entry.ituz = UInt64(value)
             case "cont": entry.cont = value.uppercased()
-            case "dxcc": entry.dxcc = UInt64(value)
+            case "dxcc": entry.dxcc = DXCC(value)
             case "country": entry.country = String(value)
             case "pfx": entry.pfx = String(value)
             case "state": entry.state = String(value)
@@ -281,7 +281,7 @@ public class AdifWriter {
         }
     }
 
-    func write(field: String, _ value: UInt64?) {
+    func write<I>(field: String, _ value: I?) where I: BinaryInteger {
         if let value = value {
             write(field: field, String(value))
         }

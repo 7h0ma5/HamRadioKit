@@ -25,7 +25,9 @@ let package = Package(
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
         .package(url: "https://github.com/drmohundro/SWXMLHash", from: "7.0.0"),
-        .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.0.0")
+        .package(url: "https://github.com/apple/swift-async-algorithms", from: "0.0.0"),
+        .package(url: "https://github.com/christophhagen/BinaryCodable", from: "1.0.0"),
+        .package(url: "https://github.com/1024jp/GzipSwift", from: "5.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -34,7 +36,9 @@ let package = Package(
             name: "HamRadioKit",
             dependencies: [
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "SWXMLHash", package: "SWXMLHash")
+                .product(name: "SWXMLHash", package: "SWXMLHash"),
+                .product(name: "Gzip", package: "GzipSwift"),
+                .product(name: "BinaryCodable", package: "BinaryCodable")
             ]),
         .target(
             name: "RigControlKit",
