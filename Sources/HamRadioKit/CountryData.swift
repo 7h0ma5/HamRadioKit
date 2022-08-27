@@ -40,7 +40,7 @@ public struct CountryData: Equatable, Codable {
                 attributes: nil
             )
 
-            path.appendPathComponent("country.dat")
+            path.appendPathComponent("country.json")
 
             return path
         }
@@ -54,11 +54,11 @@ public struct CountryData: Equatable, Codable {
 
         Self.logger.info("Trying to load country data from \(url.description)")
 
-        guard let binaryData = try? Data(contentsOf: url) else {
+        guard let jsonData = try? Data(contentsOf: url) else {
             return CountryData()
         }
 
-        guard let data = try? BinaryDecoder().decode(CountryData.self, from: binaryData) else {
+        guard let data = try? JSONDecoder().decode(CountryData.self, from: jsonData) else {
             return CountryData()
         }
 
@@ -68,7 +68,7 @@ public struct CountryData: Equatable, Codable {
     public func store(path: URL? = nil) {
         guard let url = (path != nil ? path : Self.fileURL) else { return }
 
-        if let encodedData = try? BinaryEncoder().encode(self) {
+        if let encodedData = try? JSONEncoder().encode(self) {
             do {
                 try encodedData.write(to: url)
                 Self.logger.info("Country file update complete!")
