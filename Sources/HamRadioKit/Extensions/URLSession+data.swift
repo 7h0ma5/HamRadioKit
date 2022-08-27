@@ -5,12 +5,10 @@
 //  Created by Thomas Gatzweiler on 27.08.22.
 //
 
+#if os(Linux)
 import Foundation
-#if canImport(FoundationNetworking)
 import FoundationNetworking
-#endif
 
-@available(macOS 10.15, *)
 extension URLSession {
     func data(from url: URL) async throws -> (Data, URLResponse) {
         return try await withCheckedThrowingContinuation { continuation in
@@ -26,3 +24,4 @@ extension URLSession {
         }
     }
 }
+#endif

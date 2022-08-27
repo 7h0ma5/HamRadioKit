@@ -22,7 +22,6 @@ public class CountryFile {
         
     }
 
-    @available(macOS 12, *)
     public func download() async throws -> CountryData {
         let (rawData, response) = try await URLSession.shared.data(from: Self.url)
 

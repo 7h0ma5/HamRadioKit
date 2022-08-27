@@ -207,6 +207,7 @@ public struct Region1Bandplan: Bandplan {
     ]
 }
 
+#if !os(Linux)
 @available(macOS 12.0, *)
 extension BandplanRange.RangeType: CustomStringConvertible {
     public var description: String {
@@ -231,3 +232,4 @@ extension BandplanFrequency.FrequencyType: CustomStringConvertible {
         }
     }
 }
+#endif

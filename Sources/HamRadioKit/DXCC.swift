@@ -11,11 +11,9 @@ public enum DXCCMode: String, Codable {
     case cw = "CW"
     case phone = "PHONE"
     case digital = "DIGITAL"
-
-
 }
 
-@available(macOS 12.0, *)
+#if !os(Linux)
 extension DXCCMode: CustomStringConvertible {
     public var description: String {
         switch self {
@@ -25,6 +23,7 @@ extension DXCCMode: CustomStringConvertible {
         }
     }
 }
+#endif
 
 public typealias DXCC = UInt16
 

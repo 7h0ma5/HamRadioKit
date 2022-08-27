@@ -30,7 +30,6 @@ public struct Clublog {
         url = urlComponents.url!
     }
 
-    @available(macOS 12, *)
     public func download() async throws -> CountryData {
         let (rawData, response) = try await URLSession.shared.data(from: url)
 
