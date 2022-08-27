@@ -49,21 +49,35 @@ public struct CountryData: Equatable, Codable {
         }
     }()
 
-    public static var shared: CountryData? = {
-        guard let path = fileURL else { return nil }
+    public static func load(path: URL? = nil) -> CountryData {
+        guard let url = (path != nil ? path : Self.fileURL) else { return CountryData() }
 
-        Self.logger.info("Trying to load country data from \(path.description)")
+        Self.logger.info("Trying to load country data from \(url.description)")
 
-        guard let binaryData = try? Data(contentsOf: path) else {
-            return nil
+        guard let binaryData = try? Data(contentsOf: url) else {
+            return CountryData()
         }
 
         guard let data = try? BinaryDecoder().decode(CountryData.self, from: binaryData) else {
-            return nil
+            return CountryData()
         }
 
         return data
-    }()
+    }
+
+    public func store(path: URL? = nil) {
+        guard let url = (path != nil ? path : Self.fileURL) else { return }
+
+        if let encodedData = try? BinaryEncoder().encode(self) {
+            do {
+                try encodedData.write(to: url)
+                Self.logger.info("Country file update complete!")
+            }
+            catch {
+                Self.logger.error("Failed to write country file!")
+            }
+        }
+    }
 
     public func update() {
         if timestamp.addingTimeInterval(7*24*60*60) > Date() {
@@ -113,21 +127,6 @@ public struct CountryData: Equatable, Codable {
         return nil
     }
 
-    public func store(path: URL? = nil) {
-        guard let url = (path != nil ? path : Self.fileURL) else { return }
-
-        if let encodedData = try? BinaryEncoder().encode(self) {
-            debugPrint(url)
-            do {
-                try encodedData.write(to: url)
-                Self.logger.info("Country file update complete!")
-            }
-            catch {
-                Self.logger.error("Failed to write country file!")
-            }
-        }
-    }
-
     public func merge(with other: CountryData) -> CountryData {
         let entityList = other.entities.map { (_, otherEntity) in
             if let entity = self.lookup(byId: otherEntity.id) {
@@ -163,6 +162,14 @@ public struct CountryData: Equatable, Codable {
             entities: entities,
             prefixes: prefixes
         )
+    }
+}
+
+extension CountryData {
+    private init() {
+        self.timestamp = Date()
+        self.entities = [:]
+        self.prefixes = [:]
     }
 }
 
