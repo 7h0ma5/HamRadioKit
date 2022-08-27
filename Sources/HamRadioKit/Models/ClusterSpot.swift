@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ClusterSpot.swift
 //  
 //
 //  Created by Thomas Gatzweiler on 09.07.22.
@@ -20,6 +20,7 @@ public struct ClusterSpot: Codable, Equatable {
     public init(id: UUID, callsign: String, spotter: String,
                 frequency: Frequency, timestamp: Date, dxccId: DXCC?,
                 comment: String?, gridsquare: Locator?) {
+
         self.id = id
         self.callsign = callsign
         self.spotter = spotter

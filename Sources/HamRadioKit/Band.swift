@@ -7,6 +7,8 @@
 
 import Foundation
 
+public typealias FrequencyRange = ClosedRange<Frequency>
+
 public enum Band: String, CaseIterable, Codable, CustomStringConvertible {
     // swiftlint:disable identifier_name
     case _2190m = "2190m"
@@ -44,20 +46,22 @@ public enum Band: String, CaseIterable, Codable, CustomStringConvertible {
     public var description: String {
         return self.name
     }
-    
+
     public var name: String {
         return self.rawValue
     }
-    
+
+    static let tree = IntervalTree.init(buildWith: Self.allCases, rangeKey: \.freqRange)
+
     public static func find(byName name: String) -> Band? {
         Band(rawValue: name)
     }
 
     public static func find(forFreq freq: Frequency) -> Band? {
-        return Band.allCases.first(where: { $0.freqRange.contains(freq) })
+        return tree.search(point: freq)
     }
 
-    public var freqRange: ClosedRange<Frequency> {
+    public var freqRange: FrequencyRange {
         switch self {
         case ._2190m: return 136_000...137_000
         case ._630m: return 472_000...479_000
@@ -91,4 +95,133 @@ public enum Band: String, CaseIterable, Codable, CustomStringConvertible {
         case ._1mm: return 241_000_000_000...250_000_000_000
         }
     }
+}
+
+protocol Bandplan {
+
+}
+
+public struct BandplanFrequency {
+    public enum FrequencyType: CustomStringConvertible {
+        case cwQrs
+        case cwQrp
+        case ssbQrp
+        case fmCall
+        case sstv
+        case emergency
+
+        public var description: String {
+            switch self {
+            case .cwQrs: return String(localized: "CW QRS")
+            case .cwQrp: return String(localized: "CW QRP")
+            case .ssbQrp: return String(localized: "SSB QRP")
+            case .fmCall: return String(localized: "FM")
+            case .sstv: return String(localized: "SSTV")
+            case .emergency: return String(localized: "Emergency Frequency")
+            }
+        }
+    }
+
+    public let band: Band
+    public let freq: Frequency
+    public let freqType: FrequencyType
+
+    init(_ band: Band, freq: Frequency, type: FrequencyType) {
+        self.band = band
+        self.freq = freq
+        self.freqType = type
+    }
+}
+
+public struct BandplanRange {
+    public enum RangeType {
+        case dxccMode(DXCCMode)
+        case contest
+        case beaconOnly
+
+        public var description: String {
+            switch self {
+            case .dxccMode(let mode): return mode.description
+            case .contest: return String(localized: "Contest")
+            case .beaconOnly: return String(localized: "Beacon")
+            }
+        }
+    }
+
+    public let band: Band
+    public let range: FrequencyRange
+    public let rangeType: RangeType
+
+    init(_ band: Band, range: FrequencyRange, type: RangeType) {
+        self.band = band
+        self.range = range
+        self.rangeType = type
+    }
+}
+
+public struct Region1Bandplan: Bandplan {
+    var intervalTree: IntervalTree<Frequency, BandplanRange>
+    var rangeTree: RangeTree<Frequency, BandplanFrequency>
+
+    public static let shared = Region1Bandplan()
+
+    init() {
+        self.intervalTree = .init(buildWith: Self.ranges, rangeKey: \.range)
+        self.rangeTree = .init(buildWith: Self.frequencies, key: \.freq)
+    }
+
+    public func searchRanges(in range: FrequencyRange) -> [BandplanRange] {
+        self.intervalTree.search(range: range)
+    }
+
+    public func searchFrequencies(in range: FrequencyRange) -> [BandplanFrequency] {
+        self.rangeTree.search(range: range)
+    }
+
+    static let ranges: [BandplanRange] = [
+        .init(._2190m, range: 135_700...135_800, type: .dxccMode(.cw)),
+
+        .init(._630m, range: 472_000...479_000, type: .dxccMode(.cw)),
+        .init(._630m, range: 475_000...479_000, type: .dxccMode(.digital)),
+
+        .init(._160m, range: 1_810_000...1_838_000, type: .dxccMode(.cw)),
+        .init(._160m, range: 1_838_000...1_843_000, type: .dxccMode(.digital)),
+        .init(._160m, range: 1_843_000...2_000_000, type: .dxccMode(.phone)),
+
+        .init(._80m, range: 3_500_000...3_570_000, type: .dxccMode(.cw)),
+        .init(._80m, range: 3_570_000...3_600_000, type: .dxccMode(.digital)),
+        .init(._80m, range: 3_600_000...3_800_000, type: .dxccMode(.phone)),
+
+        .init(._40m, range: 7_000_000...7_040_000, type: .dxccMode(.cw)),
+        .init(._40m, range: 7_040_000...7_050_000, type: .dxccMode(.digital)),
+        .init(._40m, range: 7_050_000...7_200_000, type: .dxccMode(.phone)),
+
+        .init(._30m, range: 10_100_000...10_130_000, type: .dxccMode(.cw)),
+        .init(._30m, range: 10_130_000...10_150_000, type: .dxccMode(.digital)),
+
+        .init(._20m, range: 14_000_000...14_070_000, type: .dxccMode(.cw)),
+        .init(._20m, range: 14_070_000...14_099_000, type: .dxccMode(.digital)),
+        .init(._20m, range: 14_099_000...14_101_000, type: .beaconOnly),
+        .init(._20m, range: 14_101_000...14_350_000, type: .dxccMode(.phone))
+    ]
+
+    static let frequencies: [BandplanFrequency] = [
+        .init(._160m, freq: 1_836_000, type: .cwQrp),
+
+        .init(._80m, freq: 3_555_000, type: .cwQrs),
+        .init(._80m, freq: 3_560_000, type: .cwQrp),
+
+        .init(._40m, freq: 7_030_000, type: .cwQrp),
+        .init(._40m, freq: 7_035_000, type: .cwQrs),
+        .init(._40m, freq: 7_090_000, type: .ssbQrp),
+        .init(._40m, freq: 7_110_000, type: .emergency),
+        .init(._40m, freq: 7_165_000, type: .sstv),
+
+        .init(._30m, freq: 10_116_000, type: .cwQrp),
+
+        .init(._20m, freq: 14_060_000, type: .cwQrp),
+        .init(._20m, freq: 14_055_000, type: .cwQrs),
+        .init(._20m, freq: 14_230_000, type: .sstv),
+        .init(._20m, freq: 14_300_000, type: .emergency)
+    ]
 }

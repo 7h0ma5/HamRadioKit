@@ -7,10 +7,18 @@
 
 import Foundation
 
-public enum DXCCMode: String, Codable {
+public enum DXCCMode: String, Codable, CustomStringConvertible {
     case cw = "CW"
     case phone = "PHONE"
     case digital = "DIGITAL"
+
+    public var description: String {
+        switch self {
+        case .cw: return String(localized: "CW")
+        case .phone: return String(localized: "Phone")
+        case .digital: return String(localized: "Digital")
+        }
+    }
 }
 
 public typealias DXCC = UInt16
