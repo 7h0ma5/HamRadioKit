@@ -15,7 +15,7 @@ public struct HamQTHConfig {
     public init() {}
 }
 
-#if !os(Linux)
+@available(macOS 10.15, *)
 public class HamQTH: Callbook {
     public static let shared = HamQTH()
     public var config: HamQTHConfig = HamQTHConfig()
@@ -84,4 +84,3 @@ public class HamQTH: Callbook {
         )
     }
 }
-#endif

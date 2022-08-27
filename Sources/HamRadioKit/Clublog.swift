@@ -30,20 +30,8 @@ public struct Clublog {
         url = urlComponents.url!
     }
 
+    @available(macOS 12, *)
     public func download() async throws -> CountryData {
-        // URLSession.shared.data is not yet implemented in FoundationNetworking
-        #if canImport(FoundationNetworking)
-        let rawData: Data? = await withCheckedContinuation { continuation in
-            URLSession.shared.dataTask(with: Self.url) { data, _, _ in
-                continuation.resume(returning: data)
-            }.resume()
-        }
-
-        guard let rawData = rawData else {
-            Self.logger.warning("Failed to download country file")
-            throw DownloadError()
-        }
-        #else
         let (rawData, response) = try await URLSession.shared.data(from: url)
 
         guard let httpResponse = response as? HTTPURLResponse,
@@ -52,7 +40,6 @@ public struct Clublog {
             Self.logger.warning("Failed to download country file")
             throw DownloadError()
         }
-        #endif
 
         let xml = XMLHash.parse(try rawData.gunzipped())
 

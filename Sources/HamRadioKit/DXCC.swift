@@ -7,11 +7,16 @@
 
 import Foundation
 
-public enum DXCCMode: String, Codable, CustomStringConvertible {
+public enum DXCCMode: String, Codable {
     case cw = "CW"
     case phone = "PHONE"
     case digital = "DIGITAL"
 
+
+}
+
+@available(macOS 12.0, *)
+extension DXCCMode: CustomStringConvertible {
     public var description: String {
         switch self {
         case .cw: return String(localized: "CW")

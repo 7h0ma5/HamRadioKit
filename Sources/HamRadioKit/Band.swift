@@ -102,29 +102,18 @@ protocol Bandplan {
 }
 
 public struct BandplanFrequency {
-    public enum FrequencyType: CustomStringConvertible {
+    public let band: Band
+    public let freq: Frequency
+    public let freqType: FrequencyType
+
+    public enum FrequencyType {
         case cwQrs
         case cwQrp
         case ssbQrp
         case fmCall
         case sstv
         case emergency
-
-        public var description: String {
-            switch self {
-            case .cwQrs: return String(localized: "CW QRS")
-            case .cwQrp: return String(localized: "CW QRP")
-            case .ssbQrp: return String(localized: "SSB QRP")
-            case .fmCall: return String(localized: "FM")
-            case .sstv: return String(localized: "SSTV")
-            case .emergency: return String(localized: "Emergency Frequency")
-            }
-        }
     }
-
-    public let band: Band
-    public let freq: Frequency
-    public let freqType: FrequencyType
 
     init(_ band: Band, freq: Frequency, type: FrequencyType) {
         self.band = band
@@ -134,23 +123,15 @@ public struct BandplanFrequency {
 }
 
 public struct BandplanRange {
+    public let band: Band
+    public let range: FrequencyRange
+    public let rangeType: RangeType
+
     public enum RangeType {
         case dxccMode(DXCCMode)
         case contest
         case beaconOnly
-
-        public var description: String {
-            switch self {
-            case .dxccMode(let mode): return mode.description
-            case .contest: return String(localized: "Contest")
-            case .beaconOnly: return String(localized: "Beacon")
-            }
-        }
     }
-
-    public let band: Band
-    public let range: FrequencyRange
-    public let rangeType: RangeType
 
     init(_ band: Band, range: FrequencyRange, type: RangeType) {
         self.band = band
@@ -224,4 +205,29 @@ public struct Region1Bandplan: Bandplan {
         .init(._20m, freq: 14_230_000, type: .sstv),
         .init(._20m, freq: 14_300_000, type: .emergency)
     ]
+}
+
+@available(macOS 12.0, *)
+extension BandplanRange.RangeType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .dxccMode(let mode): return mode.description
+        case .contest: return String(localized: "Contest")
+        case .beaconOnly: return String(localized: "Beacon")
+        }
+    }
+}
+
+@available(macOS 12.0, *)
+extension BandplanFrequency.FrequencyType: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .cwQrs: return String(localized: "CW QRS")
+        case .cwQrp: return String(localized: "CW QRP")
+        case .ssbQrp: return String(localized: "SSB QRP")
+        case .fmCall: return String(localized: "FM")
+        case .sstv: return String(localized: "SSTV")
+        case .emergency: return String(localized: "Emergency Frequency")
+        }
+    }
 }
