@@ -44,6 +44,17 @@ class LocatorTests: XCTestCase {
         XCTAssertFalse(Locator("MO96QY").isValid)
     }
 
+    func testLocatorGeneration() throws {
+        XCTAssertEqual(Locator(latitude: 50.7747536, longitude: 6.0839191), "JO30BS")
+        XCTAssertEqual(Locator(latitude: 65.0677, longitude: -149.8535), "BP55BB")
+        XCTAssertEqual(Locator(latitude: -27.1161, longitude: -109.3591), "DG52HV")
+        XCTAssertEqual(Locator(latitude: -48.0249, longitude: 166.6022), "RE31HX")
+        XCTAssertEqual(Locator(latitude: -90.0, longitude: -180.0), "AA00AA")
+        XCTAssertEqual(Locator(latitude: 89.99999, longitude: -180.0), "AR09AX")
+        XCTAssertEqual(Locator(latitude: -90.0, longitude: 179.99999), "RA90XA")
+        XCTAssertEqual(Locator(latitude: 89.99999, longitude: 179.99999), "RR99XX")
+    }
+
     func testPerformance() throws {
         self.measure {
             let locator = Locator("JO30BS")

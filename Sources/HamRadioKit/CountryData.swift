@@ -7,7 +7,6 @@
 
 import Foundation
 import Logging
-import BinaryCodable
 
 public struct CountryData: Equatable, Codable {
     public let timestamp: Date
@@ -103,8 +102,7 @@ public struct CountryData: Equatable, Codable {
 
         for idx in (1...callsign.count).reversed() {
             let prefix = String(callsign.prefix(idx))
-
-            if let result = lookup(prefix: callsign, date: date, exact: false),
+            if let result = lookup(prefix: prefix, date: date, exact: false),
                let entity = self.lookup(byId: result.entityId) {
                 return CountryEntity(merge: entity, with: result)
             }

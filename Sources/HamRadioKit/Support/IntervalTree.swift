@@ -114,24 +114,30 @@ public class IntervalTree<I, T> where I: Comparable {
         return result
     }
 
-    public func search(point: I) -> T? {
+    public func search(point: I) -> [T] {
         guard let node = self.node else {
-            return nil
+            return []
         }
 
-        if let result = children.left?.search(point: point) {
-            return result
+        if point > node.max {
+            return []
         }
+
+        var result: [T] = []
+
+        result.append(contentsOf: children.left?.search(point: point) ?? [])
 
         if node.range.contains(point) {
-            return node.value
+            result.append(node.value)
         }
 
         if point < node.range.lowerBound {
-            return nil
+            return result
         }
 
-        return children.right?.search(point: point)
+        result.append(contentsOf: children.right?.search(point: point) ?? [])
+
+        return result
     }
 
     public var count: UInt {

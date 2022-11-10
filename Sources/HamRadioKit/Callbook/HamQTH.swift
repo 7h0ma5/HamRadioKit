@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Logging
 import SWXMLHash
 
 public struct HamQTHConfig {
@@ -23,8 +24,13 @@ public class HamQTH: Callbook {
     private static let apiUrl = "https://www.hamqth.com/xml.php"
     private var sessionId: String?
 
+    private let logger = Logger(
+        label: String(describing: HamQTH.self)
+    )
+
     func login() async -> String? {
         guard !config.username.isEmpty && !config.password.isEmpty else {
+            logger.warning("HamQTH credentials not set.")
             return nil
         }
 
@@ -51,7 +57,13 @@ public class HamQTH: Callbook {
 
     public func lookup(callsign: String) async -> CallbookEntry? {
         if sessionId == nil {
+            logger.info("Trying create a HamQTH session...")
             sessionId = await login()
+        }
+
+        guard let sessionId = sessionId else {
+            logger.error("HamQTH login failed.")
+            return nil
         }
 
         var urlComponents = URLComponents(string: "https://www.hamqth.com/xml.php")!

@@ -17,18 +17,44 @@ import MapKit
 public typealias Locator = String
 
 public extension Locator {
-    private static let regex: NSRegularExpression = {
-        try! NSRegularExpression(
-            pattern: "^[A-R][A-R]((?![A-X])([0-9][0-9])([A-X][A-X])?){0,2}$",
-            options: [.caseInsensitive]
-        )
-    }()
+    private static let regex = #/^[A-R][A-R]((?![A-X])([0-9][0-9])([A-X][A-X])?){0,2}$/#.ignoresCase()
 
     var isValid: Bool {
-        Self.regex.firstMatch(in: self, range: NSRange(location: 0, length: self.count)) != nil
+        return (try? Locator.regex.firstMatch(in: self)) != nil
+    }
+
+    init(latitude: Double, longitude: Double, precision: Int = 6) {
+        var longitude = longitude + 180.0
+        var latitude = latitude + 90.0
+        self = ""
+
+        self.append(String(UnicodeScalar(65 + Int(longitude / 20.0))!))
+        self.append(String(UnicodeScalar(65 + Int(latitude / 10.0))!))
+
+        longitude = fmod(longitude, 20.0)
+        latitude = fmod(latitude, 10.0)
+
+        self.append(String(UnicodeScalar(48 + Int(longitude / 2.0))!))
+        self.append(String(UnicodeScalar(48 + Int(latitude / 1.0))!))
+
+        if precision <= 4 { return }
+
+        longitude = fmod(longitude, 2.0)
+        latitude = fmod(latitude, 1.0)
+
+        self.append(String(UnicodeScalar(65 + Int(longitude * 60.0 / 5.0))!))
+        self.append(String(UnicodeScalar(65 + Int(latitude * 60.0 / 2.5))!))
     }
 
     #if canImport(CoreLocation)
+    init(from location: CLLocation, precision: Int = 6) {
+        self.init(from: location.coordinate, precision: precision)
+    }
+
+    init(from coordinate: CLLocationCoordinate2D, precision: Int = 6) {
+        self.init(latitude: coordinate.latitude, longitude: coordinate.longitude, precision: precision)
+    }
+
     func distance(from other: Locator) -> CLLocationDistance? {
         if let thisLocation = self.centerLocation {
             if let otherLocation = other.centerLocation {
