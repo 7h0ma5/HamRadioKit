@@ -13,8 +13,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        swift: ["5.7"]
+        os: [macos-latest]
+        swift: ["5.7.1"]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: swift-actions/setup-swift@v1
