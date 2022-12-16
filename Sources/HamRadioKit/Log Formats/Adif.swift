@@ -48,11 +48,16 @@ private struct AdifField {
     let value: Substring?
 }
 
+public enum AdifWarning: Hashable {
+    case unknownField(String)
+}
+
 public class AdifReader {
     private var data: Substring
     private var header: AdifHeader?
 
     private var initialCount: Int
+    private var unknownFields: Set<String> = []
 
     static func parseDatetime(date: String, time: String?) -> Date? {
         if let time = time {
@@ -78,6 +83,10 @@ public class AdifReader {
 
     public var progress: Double {
         1.0 - (Double(self.data.maximumLengthOfBytes(using: .utf8)) / Double(self.initialCount))
+    }
+
+    public var warnings: [AdifWarning] {
+        unknownFields.map(AdifWarning.unknownField)
     }
 
     private func readField() -> AdifField? {
@@ -221,7 +230,7 @@ public class AdifReader {
             case "stx_string": entry.serialSent = String(value)
             case "srx_string": entry.serialRcvd = String(value)
             default:
-                debugPrint("unknown field:", field.name)
+                unknownFields.insert(String(field.name))
             }
         }
 
