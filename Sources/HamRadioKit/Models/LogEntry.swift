@@ -152,22 +152,22 @@ extension LogEntry {
     ]
 
     // swiftlint:disable:next large_tuple
-    static let countries: [(prefix: String, qth: String, dxccId: DXCC, ituz: UInt64, cqz: UInt64)] = [
-        ("VU", "New Delhi", 324, 41, 22),
-        ("LA", "Oslo", 266, 18, 14),
-        ("M", "London", 223, 27, 14),
-        ("JA", "Tokyo", 339, 45, 25),
-        ("F", "Paris", 227, 27, 14),
-        ("DL", "Berlin", 230, 28, 14),
-        ("EA", "Madrid", 281, 37, 14),
-        ("K", "New York", 291, 6, 3),
-        ("ON", "Brussels", 209, 27, 14),
-        ("TF", "Reykjavik", 242, 17, 40),
-        ("I", "Rome", 248, 28, 15),
-        ("UR", "Kyiv", 288, 29, 16),
-        ("VK", "Sydney", 150, 60, 29),
-        ("ZL", "Wellington", 170, 60, 32),
-        ("ZS", "Cape Town", 462, 57, 38)
+    static let countries: [(prefix: String, qth: String, dxccId: DXCC, ituz: UInt64, cqz: UInt64, gridsquare: Locator)] = [
+        ("VU", "New Delhi", 324, 41, 22, "ML88OO"),
+        ("LA", "Oslo", 266, 18, 14, "JO59IV"),
+        ("M", "London", 223, 27, 14, "IO91WM"),
+        ("JA", "Tokyo", 339, 45, 25, "PM95VQ"),
+        ("F", "Paris", 227, 27, 14, "JN18DU"),
+        ("DL", "Berlin", 230, 28, 14, "JO62QM"),
+        ("EA", "Madrid", 281, 37, 14, "IN80DK"),
+        ("K", "New York", 291, 6, 3, "FN20XR"),
+        ("ON", "Brussels", 209, 27, 14, "JO20EU"),
+        ("TF", "Reykjavik", 242, 17, 40, "HP94AD"),
+        ("I", "Rome", 248, 28, 15, "JN61FV"),
+        ("UR", "Kyiv", 288, 29, 16, "KO50GK"),
+        ("VK", "Sydney", 150, 60, 29, "QF56OD"),
+        ("ZL", "Wellington", 170, 60, 32, "RE78JR"),
+        ("ZS", "Cape Town", 462, 57, 38, "JF96FB")
     ]
 
     static let bands: [Band] = [
@@ -196,6 +196,7 @@ extension LogEntry {
         entry.callsign = "\(country.prefix)\(Int.random(in: 0...9))\(randomSuffix())"
         entry.name = names.randomElement()
         entry.qth = country.qth
+        entry.gridsquare = country.gridsquare
         entry.mode = modes.randomElement()
         entry.band = bands.randomElement()
         entry.rstRcvd = entry.mode?.defaultReport
@@ -208,6 +209,8 @@ extension LogEntry {
         entry.pfx = country.prefix
         entry.qslRcvd = QSLReceivedStatus.allCases.randomElement() ?? .no
         entry.qslSent = QSLSentStatus.allCases.randomElement() ?? .no
+        entry.myRig = "IC-7300"
+        entry.myGridsquare = "JO30BS"
 
         return entry
     }

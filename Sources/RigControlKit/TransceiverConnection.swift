@@ -8,14 +8,21 @@
 import Foundation
 import AsyncAlgorithms
 
-public actor TransceiverConnection {
-    public var stateChannel = AsyncChannel(element: TransceiverState.self)
+public class TransceiverConnection {
+    public var stateChannel: AsyncChannel<TransceiverState> = AsyncChannel()
 
     public var transceiver: Transceiver?
     public var control: any TransceiverControl
+    public var state = TransceiverState()
 
     public init() {
         control = DummyTransceiverConnection(channel: stateChannel)
+
+        Task {
+            for await newState in stateChannel {
+                self.state = newState
+            }
+        }
     }
 
     public func connect(transceiver: Transceiver) async {
@@ -27,6 +34,7 @@ public actor TransceiverConnection {
         self.control = await transceiver.connection(channel: stateChannel)
 
         do {
+            debugPrint("Trying to connect to transceiver")
             try await self.control.connect()
         }
         catch {

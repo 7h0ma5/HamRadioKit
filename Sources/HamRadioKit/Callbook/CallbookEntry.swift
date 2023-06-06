@@ -14,4 +14,5 @@ public struct CallbookEntry {
     public let gridsquare: Locator?
     public let country: String?
     public let dxccId: DXCC?
+    public let coordinates: (lat: Double, lon: Double)?
 }

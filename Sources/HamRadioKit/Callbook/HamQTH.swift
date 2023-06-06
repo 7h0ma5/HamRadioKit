@@ -86,13 +86,28 @@ public class HamQTH: Callbook {
 
         let result = xml["HamQTH"]["search"]
 
+        debugPrint(result)
+
+
+        let coordinates: (lat: Double, lon: Double)?
+
+        if let lat = result["latitude"].element.flatMap({ return Double($0.text) }),
+           let lon = result["longitude"].element.flatMap({ return Double($0.text) }) {
+
+            coordinates = (lat: lat, lon: lon)
+        }
+        else {
+            coordinates = nil
+        }
+
         return CallbookEntry(
             callsign: callsign,
             name: result["nick"].element?.text,
             qth: result["qth"].element?.text,
             gridsquare: result["grid"].element?.text,
             country: result["country"].element?.text,
-            dxccId: (result["adif"].element?.text).flatMap(DXCC.init)
+            dxccId: (result["adif"].element?.text).flatMap(DXCC.init),
+            coordinates: coordinates
         )
     }
 }
